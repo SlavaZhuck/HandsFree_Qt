@@ -22,7 +22,7 @@
 #define STATUS_OK      0x10 // устройство работает в штатном режиме
 #define STATUS_BAD     0x11 // устройство работает некорректно
 #define NO_COMAND      0x14 // принятой команды нет в списке
-
+#define BAD_PACKET     0x15
 #define SB             0xaa
 
 #define ADR_PC         0x1
@@ -30,7 +30,7 @@
 #define ADR_TX(x)      x<<4
 #define ADR_REC(x)     x
 
-
+#define TIMEOUT         100
 struct Settings
 {
     QString                  name;
@@ -74,11 +74,11 @@ public slots:
 
     void process_Port();
 
-    void WriteToPort(QByteArray data);
+    void WriteToPort(QByteArray & data);
     //bool WriteToPort(QByteArray data);
 
     //void ReadInPort();
-    void ReadInPort();
+    uint8_t ReadInPort();
 
     quint16 Crc16(QByteArray pcBlock, quint16 len);
 

@@ -52,10 +52,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)) ,this, SLOT(checkCustomBaudRatePolicy(int)));
 
-    ui->comboBoxBaudRate->addItem(QLatin1String("9600"), QSerialPort::Baud9600);
-    ui->comboBoxBaudRate->addItem(QLatin1String("19200"), QSerialPort::Baud19200);
-    ui->comboBoxBaudRate->addItem(QLatin1String("38400"), QSerialPort::Baud38400);
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
+    ui->comboBoxBaudRate->addItem(QLatin1String("38400"), QSerialPort::Baud38400);
+    ui->comboBoxBaudRate->addItem(QLatin1String("19200"), QSerialPort::Baud19200);
+    ui->comboBoxBaudRate->addItem(QLatin1String("9600"), QSerialPort::Baud9600);
     ui->comboBoxBaudRate->addItem(QLatin1String("Custom"));
    // fill data bits
     ui->comboBoxDataBits->addItem(QLatin1String("5"), QSerialPort::Data5);
@@ -102,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));
     connect(PortNew, SIGNAL(ReadInPort()),this,SLOT(Print(QByteArray)));
     connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(send_key(QByteArray)));
+    connect(PortNew, SIGNAL(readyRead()), this, SLOT(ReadInPort()));
+    connect(PortNew, SIGNAL(error(QSerialPort::SerialPortError)),this,SLOT(handleError(QSerialPort::SerialPortError)));
     thread_New->start();
 }
 

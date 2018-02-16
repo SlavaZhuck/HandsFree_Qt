@@ -3,6 +3,7 @@
 #include <mainwindow.h>
 #include <QString>
 #include <QTextCodec>
+#include <QThread>
 
 //QByteArray rx_buf[25];
 //QByteArray tx_buf[25];
@@ -21,9 +22,8 @@ Port :: ~Port()
 void Port :: process_Port()
 {
     qDebug("Hi");//виден в дебаге при подключении гарнитуры
-    connect(&thisPort, SIGNAL(error(QSerialPort::SerialPortError)),
-            this,SLOT(handleError(QSerialPort::SerialPortError)));
-    connect(&thisPort, SIGNAL(readyRead()), this, SLOT(ReadInPort()));
+
+
 }
 
 //запись насроек
@@ -53,9 +53,16 @@ void Port :: ConnectPort(void)
             if(thisPort.isOpen())
             {//если открыт - прнимаем надпись "Порт открыт"
                 error_((SettingsPort.name+ "  Порт открыт:\r")/*.toLocal8Bit()*/);
-                tx_get_status();
-                ReadInPort();
+                uint8_t status = 0;
+
+
+                while(status != STATUS_OK){
+                    QThread::sleep(1);
+                    tx_get_status();
+                    status = ReadInPort();
+                }
                 tx_get_fh_param();
+
                 ReadInPort();
                 tx_get_fh_key();
                 ReadInPort();
@@ -94,11 +101,12 @@ void  Port::DisconnectPort()
 }
 
 //Запись в порт
-void Port :: WriteToPort(QByteArray data)
+void Port :: WriteToPort(QByteArray & data)
 {
     if(thisPort.isOpen())
     {
         thisPort.write(data);
+        thisPort.waitForBytesWritten(TIMEOUT);
     }
 }
 
@@ -156,8 +164,8 @@ void Port::tx_get_status()//запрос статуса
     {
         qDebug()<<DataTx[i];
     }
-    thisPort.write(DataTx);
-    //WriteToPort(DataTx);
+    //thisPort.write(DataTx);
+    WriteToPort(DataTx);
     //thisPort.waitForReadyRead(/*TIMEOUT*/ 200);
 }
 
@@ -182,8 +190,8 @@ void Port::tx_get_fh_param()//запрос текущих параметров �
     {
         qDebug()<<DataTx[i];
     }
-    thisPort.write(DataTx);
-    //WriteToPort(DataTx);
+    //thisPort.write(DataTx);
+    WriteToPort(DataTx);
     //thisPort.waitForReadyRead(/*TIMEOUT*/ 200);
 
 }
@@ -209,9 +217,9 @@ void Port::tx_get_fh_key()//запрос ключа шифрования
     {
         qDebug()<<DataTx[i];
     }
-    thisPort.write(DataTx);
+    //thisPort.write(DataTx);
 
-    //WriteToPort(DataTx);
+    WriteToPort(DataTx);
     //thisPort.waitForReadyRead(/*TIMEOUT*/ 200);
 }
 
@@ -233,8 +241,8 @@ void Port::tx_rec_ok()
     {
         qDebug()<<DataTx[i];
     }
-    thisPort.write(DataTx);
-
+   // thisPort.write(DataTx);
+    WriteToPort(DataTx);
 }
 
 ////Запись в порт
@@ -253,11 +261,12 @@ void Port::tx_rec_ok()
 //}
 
 
-void Port::ReadInPort()//Парсер
+uint8_t Port::ReadInPort()//Парсер
 {
-    thisPort.waitForReadyRead(/*TIMEOUT*/ 100);
     QByteArray data_rx;
-    data_rx.append(thisPort.readAll());
+    while(thisPort.waitForReadyRead(TIMEOUT)){
+        data_rx.append(thisPort.readAll());
+    }
     unsigned short v_crc;
     unsigned char  hb_crc = 0xff,//crc пришедшей посылки (старший байт)
                    lb_crc = 0xff,//crc пришедшей посылки (младший байт)
@@ -294,6 +303,7 @@ void Port::ReadInPort()//Парсер
                 error_(("STATUS_OK")/*.toLocal8Bit()*/);        //вывод на консоль
                 //qDebug()<<"STATUS_OK";
                 //tx_rec_ok();
+                return STATUS_OK;
             }
             else if(data_rx[3] == SEND_FH_PARAM)
             {
@@ -302,6 +312,7 @@ void Port::ReadInPort()//Парсер
                 error_(("GET_PARAM")/*.toLocal8Bit()*/);
                 qDebug()<<"GET_PARAM";
                 //tx_rec_ok();
+                return SEND_FH_PARAM;
             }
             else if(data_rx[3] == SEND_FH_KEY)
             {
@@ -316,13 +327,17 @@ void Port::ReadInPort()//Парсер
                 error_(str.append(key_buf));
 //                tx_rec_ok();
 //                qDebug()<<"REC_ERROR";
+                return SEND_FH_KEY;
             }
             else if(data_rx[3] == REC_ERROR)
             {
                 error_("REC_ERROR");
                 qDebug()<<"REC_ERROR";
+                return REC_ERROR;
             }
         }
+    }else{
+        return BAD_PACKET;
     }
 
     //data_rx.clear();
