@@ -101,9 +101,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(PortNew, SIGNAL(outPort(QString)), this, SLOT(Print(QString)));//Лог ошибок
     connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));
     connect(PortNew, SIGNAL(ReadInPort()),this,SLOT(Print(QByteArray)));
-    connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(send_key(QByteArray)));
-    connect(PortNew, SIGNAL(readyRead()), this, SLOT(ReadInPort()));
-    connect(PortNew, SIGNAL(error(QSerialPort::SerialPortError)),this,SLOT(handleError(QSerialPort::SerialPortError)));
+    //connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(send_key(QByteArray)));
+    connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));
+    connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));
     thread_New->start();
 }
 
@@ -145,8 +145,11 @@ void MainWindow::on_lineEdit_returnPressed()
         bool ok;
         senddata[i]=ran.toInt(&ok,16);
     }
-    writeData(senddata); // Отправка данных в порт
-    Print(senddata); // Вывод данных в консоль
+   // PortNew->WriteToPort(senddata); // Отправка данных в порт
+    Print("Load key"); // Вывод данных в консоль
+    writeData(senddata);
+    readyRead();
+
 }
 
 void MainWindow::Print(QString data)  //QString data
@@ -202,12 +205,14 @@ void MainWindow::on_pushButton_3_clicked()
     crc = Crc16(DataTxC, 6);
     DataTx[7] = (crc & 0xFF00)>>8;
     DataTx[8] = crc & 0x00FF;
-
+    Print("Get key"); // Вывод данных в консоль
+    writeData(DataTx);
+    readyRead();
     for(i = 0; i < 9; i++)
     {
         qDebug()<<DataTx[i];
     }
-     ui->lineEdit->setText(QString(DataTx.toHex().constData()));
+     //ui->lineEdit->setText(QString(DataTx.toHex().constData()));
     //ui->lineEdit->setText(QString(DataTx.constData()));//toHex().
 }
 
@@ -233,9 +238,9 @@ void MainWindow::on_pushButton_clicked()
             //qDebug()<<arr.toHex();//отображение в дебагере
         }
 
-    crc = Crc16(DataTxC, 18);
-    DataTxK[19] = (crc & 0xFF00)>>8;
-    DataTxK[20] = crc & 0x00FF;
+    crc = Crc16(DataTxC, 19);
+    DataTxK[20] = (crc & 0xFF00)>>8;
+    DataTxK[21] = crc & 0x00FF;
 
 //    QString str(DataTxK);
 //    qDebug() << str;
@@ -249,21 +254,21 @@ void MainWindow::on_pushButton_clicked()
             buf_DataTxK[i] = DataTxK[i];//формирование посылки
             //qDebug()<<arr.toHex();//отображение в дебагере
         }
-    ui->lineEdit->setText(QByteArray(DataTxK.constData()).toUpper().toHex());
+    ui->lineEdit->setText(QByteArray(DataTxK.constData()).toHex().toUpper());
 }
 
 
-void MainWindow::send_key(QByteArray data)
-{
-    QByteArray data_send;
-    for (int i = 0; i < 22; i++)
-        {
+//void MainWindow::send_key(QByteArray data)
+//{
+//    QByteArray data_send;
+//    for (int i = 0; i < 22; i++)
+//        {
 
-            data_send[i] = buf_DataTxK[i];//формирование посылки
-            //qDebug()<<arr.toHex();//отображение в дебагере
-        }
-    writeData(data_send);
-}
+//            data_send[i] = buf_DataTxK[i];//формирование посылки
+//            //qDebug()<<arr.toHex();//отображение в дебагере
+//        }
+//    writeData(data_send);
+//}
 
 
 

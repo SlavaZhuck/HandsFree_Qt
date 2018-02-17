@@ -74,7 +74,7 @@ public slots:
 
     void process_Port();
 
-    void WriteToPort(QByteArray & data);
+    void WriteToPort(QByteArray data);
     //bool WriteToPort(QByteArray data);
 
     //void ReadInPort();

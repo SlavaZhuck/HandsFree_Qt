@@ -101,7 +101,7 @@ void  Port::DisconnectPort()
 }
 
 //Запись в порт
-void Port :: WriteToPort(QByteArray & data)
+void Port :: WriteToPort(QByteArray data)
 {
     if(thisPort.isOpen())
     {
@@ -319,11 +319,9 @@ uint8_t Port::ReadInPort()//Парсер
                 for(int i = 3, j = 0; i < (data_rx[2] + 3); i++ , j++)
                 {
                     key_buf[j] = buf_rx[i];
-                    //error_(key_buf.toHex().toUpper());
-                     //qDebug()<<key_buf.toHex();
                 }
                 error_("GET_FH_KEY");
-                error_(key_buf.toUpper());
+                error_(key_buf.toHex().toUpper());
 //                tx_rec_ok();
 //                qDebug()<<"REC_ERROR";
                 return SEND_FH_KEY;
@@ -335,9 +333,9 @@ uint8_t Port::ReadInPort()//Парсер
                 return REC_ERROR;
             }
         }
-    }else{
-        return BAD_PACKET;
     }
+
+    return BAD_PACKET;
 
     //data_rx.clear();
     //return 0;//Если все в плохо - отправляем "пустоту"
