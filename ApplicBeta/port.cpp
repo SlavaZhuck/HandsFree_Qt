@@ -316,15 +316,14 @@ uint8_t Port::ReadInPort()//Парсер
             }
             else if(data_rx[3] == SEND_FH_KEY)
             {
-                for(int i = 3, j = 0; i < (data_rx[2] + 3); i++)
+                for(int i = 3, j = 0; i < (data_rx[2] + 3); i++ , j++)
                 {
                     key_buf[j] = buf_rx[i];
                     //error_(key_buf.toHex().toUpper());
                      //qDebug()<<key_buf.toHex();
                 }
                 error_("GET_FH_KEY");
-                QString str(key_buf);
-                error_(str.append(key_buf));
+                error_(key_buf.toUpper());
 //                tx_rec_ok();
 //                qDebug()<<"REC_ERROR";
                 return SEND_FH_KEY;
