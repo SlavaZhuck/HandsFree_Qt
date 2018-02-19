@@ -260,8 +260,20 @@ uint8_t Port::ReadInPort()//Парсер
             }
             else if(data_rx[3] == SEND_FH_PARAM)//Ответ на запрос параметров
             {
+                QByteArray buf_param;
+
+                for(int i = 0, j = 4; j < 10; i++, j++)
+                {
+                    buf_param[i] = data_rx[j];
+                }
+                QString str(buf_param.toHex().toUpper());
+                for(int i = 0; i < str.length(); i = i + 3)
+                    str =str.insert(i, ":");//вставляем ":" в нужные маста
+                str = str.remove(0, 1);//удаляем нулевой пробел
                 error_(("GET_PARAM"));//вывод на консоль
+                error_(("MAC адрес: " + str));//вывод на консоль
                 qDebug()<<"GET_PARAM";
+
                 return SEND_FH_PARAM;
             }
             else if(data_rx[3] == SEND_FH_KEY)//Ответ на запрос ключа шифрования

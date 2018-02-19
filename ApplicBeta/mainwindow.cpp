@@ -100,19 +100,13 @@ void MainWindow::on_pushButton_4_clicked()
     }
 }
 
-//Сохранение параметров порта-----------------------------------------------
-//void MainWindow::on_pushButton_7_clicked()//Сохранение настроек порта
-//{
-//    savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
-//                 ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
-//}
-
 //Сохранение параметров порта----------------------------------------------------------------
 void MainWindow::on_pushButton_5_clicked()
 {
     savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
                  ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
 }
+
 //Выбор скорости------------------------------------------------------------------------------
 void MainWindow::checkCustomBaudRatePolicy(int idx)
 {
@@ -129,8 +123,6 @@ QByteArray buf_DataTxK;//массив посылки ключа
 //Формирование посылки в QLine Edit-----------------------------------------------------------
 void MainWindow::on_lineEdit_returnPressed()
 {
-    //QByteArray data; // Текстовая переменная
-    //data = ui->lineEdit->text().toLocal8Bit().toHex() + '\r'; // Присвоение "data" значения из EnterText
     QString input = ui->lineEdit->text();// Присвоение "input" значения из EnterText
     QString input_spaces;//Для вставки пробелов
     QByteArray senddata_crc;//Для расчета CRC
@@ -269,20 +261,4 @@ void MainWindow::on_pushButton_clicked()
     qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
     ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
 }
-
-
-//Отображение параметров гарнитуры------------------------------------------------------------------
-//void MainWindow::showPortInfo(int idx)
-//{
-//    if (idx != -1)
-//    {
-//        QStringList list = ui->comboBoxCom->itemData(idx).toStringList();
-//        ui->label->setText(tr("Описание: %1").arg(list.at(1)));
-//        ui->label_2->setText(tr("Производитель: %1").arg(list.at(2)));
-//        ui->label_3->setText(tr("Размещение: %1").arg(list.at(3)));
-//        ui->label_4->setText(tr("ID производителя: %1").arg(list.at(4)));
-//        ui->label_5->setText(tr("ID устройства: %1").arg(list.at(5)));
-//    }
-//}
-
 
