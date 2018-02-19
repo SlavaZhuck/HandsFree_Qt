@@ -31,13 +31,15 @@ signals:
 private slots:
     void on_pushButton_4_clicked();
 
+    //void on_pushButton_7_clicked();
+
+    void on_pushButton_5_clicked();
+
     void checkCustomBaudRatePolicy(int idx);
 
     void Print(QString data);
 
-    void on_lineEdit_returnPressed();
-
-    void on_pushButton_7_clicked();
+    void on_lineEdit_returnPressed();    
 
     quint16 Crc16(QByteArray pcBlock, quint16 len);
 
@@ -45,7 +47,7 @@ private slots:
 
     void on_pushButton_clicked();
 
-    void showPortInfo(int idx);
+    //void showPortInfo(int idx);
 
 private:
     Ui::MainWindow *ui;

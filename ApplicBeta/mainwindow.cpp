@@ -26,15 +26,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Показать доступнуе COM-порты------------------------------------------------------------
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
+    {
              ui->comboBoxCom->addItem(info.portName());
+    }
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
     connect(ui->comboBoxCom, SIGNAL(currentIndexChanged(int)), this, SLOT(showPortInfo(int)));
 
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
-    ui->comboBoxBaudRate->addItem(QLatin1String("38400"), QSerialPort::Baud38400);
-    ui->comboBoxBaudRate->addItem(QLatin1String("19200"), QSerialPort::Baud19200);
-    ui->comboBoxBaudRate->addItem(QLatin1String("9600"), QSerialPort::Baud9600);
+    ui->comboBoxBaudRate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400);
+    ui->comboBoxBaudRate->addItem(QLatin1String("19200"),  QSerialPort::Baud19200);
+    ui->comboBoxBaudRate->addItem(QLatin1String("9600"),   QSerialPort::Baud9600);
     ui->comboBoxBaudRate->addItem(QLatin1String("Custom"));
     // Длина потока
     ui->comboBoxDataBits->addItem(QLatin1String("5"), QSerialPort::Data5);
@@ -43,20 +45,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxDataBits->addItem(QLatin1String("8"), QSerialPort::Data8);
     ui->comboBoxDataBits->setCurrentIndex(3);
     // Определение бита четности
-    ui->comboBoxParity->addItem(QLatin1String("None"), QSerialPort::NoParity);
-    ui->comboBoxParity->addItem(QLatin1String("Even"), QSerialPort::EvenParity);
-    ui->comboBoxParity->addItem(QLatin1String("Odd"), QSerialPort::OddParity);
-    ui->comboBoxParity->addItem(QLatin1String("Mark"), QSerialPort::MarkParity);
+    ui->comboBoxParity->addItem(QLatin1String("None"),  QSerialPort::NoParity);
+    ui->comboBoxParity->addItem(QLatin1String("Even"),  QSerialPort::EvenParity);
+    ui->comboBoxParity->addItem(QLatin1String("Odd"),   QSerialPort::OddParity);
+    ui->comboBoxParity->addItem(QLatin1String("Mark"),  QSerialPort::MarkParity);
     ui->comboBoxParity->addItem(QLatin1String("Space"), QSerialPort::SpaceParity);
     // Определение стопового бита
-    ui->comboBoxStopBits->addItem(QLatin1String("1"), QSerialPort::OneStop);
+    ui->comboBoxStopBits->addItem(QLatin1String("1"),   QSerialPort::OneStop);
     #ifdef Q_OS_WIN
     ui->comboBoxStopBits->addItem(QLatin1String("1.5"), QSerialPort::OneAndHalfStop);
     #endif
-    ui->comboBoxStopBits->addItem(QLatin1String("2"), QSerialPort::TwoStop);
+    ui->comboBoxStopBits->addItem(QLatin1String("2"),   QSerialPort::TwoStop);
     // Контроль потока
-    ui->comboBoxFlowControl->addItem(QLatin1String("None"), QSerialPort::NoFlowControl);
-    ui->comboBoxFlowControl->addItem(QLatin1String("RTS/CTS"), QSerialPort::HardwareControl);
+    ui->comboBoxFlowControl->addItem(QLatin1String("None"),     QSerialPort::NoFlowControl);
+    ui->comboBoxFlowControl->addItem(QLatin1String("RTS/CTS"),  QSerialPort::HardwareControl);
     ui->comboBoxFlowControl->addItem(QLatin1String("XON/XOFF"), QSerialPort::SoftwareControl);
 
     //Отправить посылку записанную в QLineEdit (текстовое поле)
@@ -91,12 +93,26 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_4_clicked()
 {
     ui->comboBoxCom->clear();
+
     foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
         ui->comboBoxCom->addItem(info.portName());
     }
 }
 
+//Сохранение параметров порта-----------------------------------------------
+//void MainWindow::on_pushButton_7_clicked()//Сохранение настроек порта
+//{
+//    savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
+//                 ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
+//}
+
+//Сохранение параметров порта----------------------------------------------------------------
+void MainWindow::on_pushButton_5_clicked()
+{
+    savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
+                 ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
+}
 //Выбор скорости------------------------------------------------------------------------------
 void MainWindow::checkCustomBaudRatePolicy(int idx)
 {
@@ -128,7 +144,7 @@ void MainWindow::on_lineEdit_returnPressed()
             input += "0";
     }
 
-    if(input[2] != ' ')//если третий символ не пробел
+    if(input[2] != " ")//если третий символ не пробел
     {
         for(int i = 0; i < input.length(); i = i + 3)
             input_spaces = input.insert(i, " ");//вставляем пробелы в нужные маста
@@ -169,12 +185,7 @@ void MainWindow::Print(QString data)
     ui->plainTextEdit->moveCursor(QTextCursor::End);
 }
 
-void MainWindow::on_pushButton_7_clicked()//Сохранение настроек порта
-{
-    savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
-                 ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
 
-}
 //Расчет CRC---------------------------------------------------------------------------------
 quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
 {
@@ -259,15 +270,19 @@ void MainWindow::on_pushButton_clicked()
     ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
 }
 
-void MainWindow::showPortInfo(int idx)
-{
-    if (idx != -1)
-    {
-        QStringList list = ui->comboBoxCom->itemData(idx).toStringList();
-        ui->label->setText(tr("Описание: %1").arg(list.at(1)));
-        ui->label_2->setText(tr("Производитель: %1").arg(list.at(2)));
-        ui->label_3->setText(tr("Размещение: %1").arg(list.at(3)));
-        ui->label_4->setText(tr("ID производителя: %1").arg(list.at(4)));
-        ui->label_5->setText(tr("ID устройства: %1").arg(list.at(5)));
-    }
-}
+
+//Отображение параметров гарнитуры------------------------------------------------------------------
+//void MainWindow::showPortInfo(int idx)
+//{
+//    if (idx != -1)
+//    {
+//        QStringList list = ui->comboBoxCom->itemData(idx).toStringList();
+//        ui->label->setText(tr("Описание: %1").arg(list.at(1)));
+//        ui->label_2->setText(tr("Производитель: %1").arg(list.at(2)));
+//        ui->label_3->setText(tr("Размещение: %1").arg(list.at(3)));
+//        ui->label_4->setText(tr("ID производителя: %1").arg(list.at(4)));
+//        ui->label_5->setText(tr("ID устройства: %1").arg(list.at(5)));
+//    }
+//}
+
+

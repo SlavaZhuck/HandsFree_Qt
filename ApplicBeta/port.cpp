@@ -221,7 +221,7 @@ uint8_t Port::ReadInPort()//Парсер
     {
         data_rx.append(thisPort.readAll());//Чтение посылки до конца
     }
-    int flag = 0;
+
     unsigned short v_crc;//Принятый CRC
     unsigned char  hb_crc = 0xff,//crc пришедшей посылки (старший байт)
                    lb_crc = 0xff,//crc пришедшей посылки (младший байт)
