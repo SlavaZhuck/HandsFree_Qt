@@ -1,12 +1,9 @@
 #include "port.h"
 #include <qdebug.h>
-#include <mainwindow.h>
 #include <QString>
 #include <QTextCodec>
 #include <QThread>
 
-//QByteArray rx_buf[25];
-//QByteArray tx_buf[25];
 
 Port :: Port(QObject *parent) : QObject(parent)
 {
@@ -15,18 +12,16 @@ Port :: Port(QObject *parent) : QObject(parent)
 
 Port :: ~Port()
 {
-    qDebug("OOps");//Виден в дебаге при отключении
+    qDebug("Oоps");//Виден в дебаге при отключении
     emit finished_Port();
 }
 
 void Port :: process_Port()
 {
-    qDebug("Hi");//виден в дебаге при подключении гарнитуры
-
-
+    qDebug("Hi");//виден в дебаге при подключении
 }
 
-//запись насроек
+//Запись насроек----------------------------------------------------------------------------------
 void Port :: Write_Settings_Port(QString name, int baudrate, int DataBits,
                                  int Parity, int StopBits, int FlowControl)
 {
@@ -38,7 +33,7 @@ void Port :: Write_Settings_Port(QString name, int baudrate, int DataBits,
     SettingsPort.flowControl = (QSerialPort::FlowControl)FlowControl;
 }
 
-//Подключение порта
+//Подключение порта------------------------------------------------------------------------------
 void Port :: ConnectPort(void)
 {
     thisPort.setPortName(SettingsPort.name);
@@ -52,19 +47,18 @@ void Port :: ConnectPort(void)
         {
             if(thisPort.isOpen())
             {//если открыт - прнимаем надпись "Порт открыт"
-                error_((SettingsPort.name+ "  Порт открыт:\r")/*.toLocal8Bit()*/);
+                error_((SettingsPort.name+ "  Порт открыт:\r"));
                 uint8_t status = 0;
 
-
-                while(status != STATUS_OK){
+                while(status != STATUS_OK)//Идет запрос статуса пока не вернется STATUS_OK
+                {
                     QThread::sleep(1);
-                    tx_get_status();
+                    tx_get_status();//Запрос статуса
                     status = ReadInPort();
                 }
-                tx_get_fh_param();
-
+                tx_get_fh_param();//Запрос параметров
                 ReadInPort();
-                tx_get_fh_key();
+                tx_get_fh_key();//Запрос ключа шифрования записанного на гарнитуре
                 ReadInPort();
             }
         }
@@ -81,8 +75,9 @@ void Port :: ConnectPort(void)
     }    
 }
 
+//Выдает сообщение об ошибке---------------------------------------------------------------------
 void Port::handleError(QSerialPort::SerialPortError error)
-{//выдает сообщение об ошибке
+{
     if ( (thisPort.isOpen()) && (error == QSerialPort::ResourceError))
     {
         error_(thisPort.errorString().toLocal8Bit());
@@ -90,7 +85,7 @@ void Port::handleError(QSerialPort::SerialPortError error)
     }
 }
 
-//Отключение порта
+//Отключение порта-------------------------------------------------------------------------------
 void  Port::DisconnectPort()
 {
     if(thisPort.isOpen())
@@ -100,7 +95,7 @@ void  Port::DisconnectPort()
     }
 }
 
-//Запись в порт
+//Запись данных в порт-----------------------------------------------------------------------------
 void Port :: WriteToPort(QByteArray data)
 {
     if(thisPort.isOpen())
@@ -110,18 +105,7 @@ void Port :: WriteToPort(QByteArray data)
     }
 }
 
-
-//void Port :: ReadInPort()
-//{
-//    QByteArray data;
-
-//    data.append(thisPort.readAll());
-//    //((QString)(data.toInt())).toLatin1().toHex();
-//    outPort(data);
-
-//}
-
-
+//Функция расчета CRC------------------------------------------------------------------------------
 quint16 Port::Crc16(QByteArray pcBlock, quint16 len)
 {
     unsigned short crc =0xFFFF;
@@ -146,131 +130,102 @@ quint16 Port::Crc16(QByteArray pcBlock, quint16 len)
     return crc;
 }
 
-void Port::tx_get_status()//запрос статуса
+//Запрос статуса устройства-----------------------------------------------------------------------
+void Port::tx_get_status()
 {
-    QByteArray DataTxC(3,0);
-    QByteArray DataTx(6,0);
-    int i = 0;
+    QByteArray DataTxC(3,0);//Массив для расчета CRC
+    QByteArray DataTx(6,0);//Массив данных
     quint16 crc;
-    DataTx[0] = SB;
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));
-    DataTx[2] = DataTxC[1] = 0x00;
-    DataTx[3] = DataTxC[2] = GET_STATUS;
-    crc = Crc16(DataTxC, 3);
-    DataTx[4] = (crc & 0xFF00)>>8;
-    DataTx[5] = crc & 0x00FF;
 
-    for(i = 0; i < 6; i++)
-    {
-        qDebug()<<DataTx[i];
-    }
-    //thisPort.write(DataTx);
-    WriteToPort(DataTx);
-    //thisPort.waitForReadyRead(/*TIMEOUT*/ 200);
+    DataTx[0] = SB;//Стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
+    DataTx[2] = DataTxC[1] = 0x00;//Длина данных
+    DataTx[3] = DataTxC[2] = GET_STATUS;//Ctrl
+    crc = Crc16(DataTxC, 3);//расчет crc отправляемой посылки
+    DataTx[4] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
+    DataTx[5] = crc & 0x00FF;//расчет crc отправляемой посылки (дладший байт)
+
+    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+
+    WriteToPort(DataTx);//Запись в порт
 }
 
-void Port::tx_get_fh_param()//запрос текущих параметров гарнитуры
+//Запрос текущих параметров гарнитуры---------------------------------------------------------------
+void Port::tx_get_fh_param()
 {
-    QByteArray DataTxC(6,0);
-    QByteArray DataTx(9,0);
-    int i = 0;
+    QByteArray DataTxC(6,0);//Массив для расчета CRC
+    QByteArray DataTx(9,0);//Массив данных
     quint16 crc;
-    DataTx[0] = SB;
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));
-    DataTx[2] = DataTxC[1] = 0x03;
-    DataTx[3] = DataTxC[2] = GET_FH_PARAM;
+
+    DataTx[0] = SB;//Стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
+    DataTx[2] = DataTxC[1] = 0x03;//Длина данных
+    DataTx[3] = DataTxC[2] = GET_FH_PARAM;//Ctrl
     DataTx[4] = DataTxC[3] = 0x01;
     DataTx[5] = DataTxC[4] = 0x02;
     DataTx[6] = DataTxC[5] = 0x03;
-    crc = Crc16(DataTxC, 6);
-    DataTx[7] = (crc & 0xFF00)>>8;
-    DataTx[8] = crc & 0x00FF;
+    crc = Crc16(DataTxC, 6);//расчет crc отправляемой посылки
+    DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
+    DataTx[8] = crc & 0x00FF;//расчет crc отправляемой посылки (дладший байт)
 
-    for(i = 0; i < 9; i++)
-    {
-        qDebug()<<DataTx[i];
-    }
-    //thisPort.write(DataTx);
-    WriteToPort(DataTx);
-    //thisPort.waitForReadyRead(/*TIMEOUT*/ 200);
-
+    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+    WriteToPort(DataTx);//Запись в порт
 }
 
-void Port::tx_get_fh_key()//запрос ключа шифрования
+//Запрос ключа шифрования--------------------------------------------------------------------------
+void Port::tx_get_fh_key()
 {
-    QByteArray DataTxC(6,0);
-    QByteArray DataTx(9,0);
-    int i = 0;
+    QByteArray DataTxC(6,0);//Массив для расчета CRC
+    QByteArray DataTx(9,0);//Массив данных
     quint16 crc;
-    DataTx[0] = SB;
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));
-    DataTx[2] = DataTxC[1] = 0x03;
-    DataTx[3] = DataTxC[2] = GET_FH_KEY;
+
+    DataTx[0] = SB;//Стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
+    DataTx[2] = DataTxC[1] = 0x03;//Длина данных
+    DataTx[3] = DataTxC[2] = GET_FH_KEY;//Ctrl
     DataTx[4] = DataTxC[3] = 0x01;
     DataTx[5] = DataTxC[4] = 0x02;
     DataTx[6] = DataTxC[5] = 0x03;
-    crc = Crc16(DataTxC, 6);
-    DataTx[7] = (crc & 0xFF00)>>8;
-    DataTx[8] = crc & 0x00FF;
+    crc = Crc16(DataTxC, 6);//расчет crc отправляемой посылки
+    DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
+    DataTx[8] = crc & 0x00FF;//расчет crc отправляемой посылки (дладший байт)
 
-    for(i = 0; i < 9; i++)
-    {
-        qDebug()<<DataTx[i];
-    }
-    //thisPort.write(DataTx);
-
-    WriteToPort(DataTx);
-    //thisPort.waitForReadyRead(/*TIMEOUT*/ 200);
+    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+    WriteToPort(DataTx);//Запись в порт
 }
 
-void Port::tx_rec_ok()
+//Подтверждение безошибочного приема--------------------------------------------------------------
+void Port::rx_rec_ok()
 {
-    QByteArray DataTxC(3,0);
-    QByteArray DataTx(6,0);
-    int i = 0;
+    QByteArray DataTxC(3,0);//Массив для расчета CRC
+    QByteArray DataTx(6,0);//Массив данных
     quint16 crc;
-    DataTx[0] = SB;
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));
-    DataTx[2] = DataTxC[1] = 0x00;
-    DataTx[3] = DataTxC[2] = REC_OK;
-    crc = Crc16(DataTxC, 3);
-    DataTx[4] = (crc & 0xFF00)>>8;
-    DataTx[5] = crc & 0x00FF;
 
-    for(i = 0; i < 6; i++)
-    {
-        qDebug()<<DataTx[i];
-    }
-   // thisPort.write(DataTx);
-    WriteToPort(DataTx);
+    DataTx[0] = SB;//Стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
+    DataTx[2] = DataTxC[1] = 0x00;//Длина данных
+    DataTx[3] = DataTxC[2] = REC_OK;//Ctrl
+    crc = Crc16(DataTxC, 3);//расчет crc принятой посылки
+    DataTx[4] = (crc & 0xFF00)>>8;//расчет crc принимаемой посылки (старший байт)
+    DataTx[5] = crc & 0x00FF;//расчет crc принимаемой посылки (дладший байт)
+
+    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+    WriteToPort(DataTx);//Запись в порт
 }
 
-////Запись в порт
-//bool Port :: WriteToPort(QByteArray data)
-//{
-//    if(thisPort.isOpen())
-//    {
-//        thisPort.write(data);
-//        if(thisPort.waitForBytesWritten(100))
-//        {
-//            if(thisPort.isDataTerminalReady())
-//                return true;
-//        }
-//    }
-//    else return false;
-//}
-
-
+//Чтение в порт-------------------------------------------------------------------------------------
 uint8_t Port::ReadInPort()//Парсер
 {
-    QByteArray data_rx;
-    while(thisPort.waitForReadyRead(TIMEOUT)){
-        data_rx.append(thisPort.readAll());
+    QByteArray data_rx;//Массив принятых данных
+    while(thisPort.waitForReadyRead(TIMEOUT))//Ожидание считывания посылки до конца
+    {
+        data_rx.append(thisPort.readAll());//Чтение посылки до конца
     }
-    unsigned short v_crc;
+    int flag = 0;
+    unsigned short v_crc;//Принятый CRC
     unsigned char  hb_crc = 0xff,//crc пришедшей посылки (старший байт)
                    lb_crc = 0xff,//crc пришедшей посылки (младший байт)
-                   len_dat, lb, hb,
+                   len_dat, lb, hb,//Длина данных, старший байт CRC, младший байт CRC
                    dat_adr, adr;
 //    if(data_rx.size() < 3)
 //    {
@@ -286,10 +241,9 @@ uint8_t Port::ReadInPort()//Парсер
     }
 
     v_crc   = Crc16(buf_rx, data_rx[2] + 3); //расчет crc пришедшей посылки
-    lb_crc  = v_crc >> 8;  //                  //расчет crc пришедшей посылки (старший байт)
-    hb_crc  = v_crc;         //                //расчет crc пришедшей посылки (младший байт)
+    lb_crc  = v_crc >> 8;                    //расчет crc пришедшей посылки (старший байт)
+    hb_crc  = v_crc;                         //расчет crc пришедшей посылки (младший байт)
     len_dat = data_rx[2] + 3;                //расчет длинны данных пришедшей посылки (старший байт)
-
     lb      = data_rx[len_dat + 2];          //crc пришедшей посылки (младший байт)
     hb      = data_rx[len_dat + 1];          //crc пришедшей посылки (старший байт)
     dat_adr = data_rx[1];                                      //адрес пришедшей посылки
@@ -298,45 +252,48 @@ uint8_t Port::ReadInPort()//Парсер
     {
         if(dat_adr == adr)                                      //сравнение адреса
         {
-            if(data_rx[3] == STATUS_OK)                         //анализ Ctrl
+            if(data_rx[3] == STATUS_OK)//Ответ на запрос статуса
             {
-                error_(("STATUS_OK")/*.toLocal8Bit()*/);        //вывод на консоль
-                //qDebug()<<"STATUS_OK";
-                //tx_rec_ok();
+                error_(("STATUS_OK"));//вывод на консоль
+                qDebug()<<"STATUS_OK";
                 return STATUS_OK;
             }
-            else if(data_rx[3] == SEND_FH_PARAM)
+            else if(data_rx[3] == SEND_FH_PARAM)//Ответ на запрос параметров
             {
-                //QString DataAsString = QTextCodec::codecForMib(106)->toUnicode(data_rx);
-                //MainWindow::Print(DataAsString);
-                error_(("GET_PARAM")/*.toLocal8Bit()*/);
+                error_(("GET_PARAM"));//вывод на консоль
                 qDebug()<<"GET_PARAM";
-                //tx_rec_ok();
                 return SEND_FH_PARAM;
             }
-            else if(data_rx[3] == SEND_FH_KEY)
+            else if(data_rx[3] == SEND_FH_KEY)//Ответ на запрос ключа шифрования
             {
                 for(int i = 3, j = 0; i < (data_rx[2] + 3); i++ , j++)
                 {
                     key_buf[j] = buf_rx[i];
                 }
-                error_("GET_FH_KEY");
-                error_(key_buf.toHex().toUpper());
-//                tx_rec_ok();
-//                qDebug()<<"REC_ERROR";
+                error_("Ключ:");//вывод на консоль
+                error_(key_buf.toHex().toUpper());//вывод на консоль записанного ключа
                 return SEND_FH_KEY;
+            }
+            else if(data_rx[3] == REC_OK)//
+            {
+                error_("Ключ загружен\r");
+                qDebug()<<"REC_OK";
+                return REC_OK;
             }
             else if(data_rx[3] == REC_ERROR)
             {
-                error_("REC_ERROR");
+                error_("REC_ERROR\r");
                 qDebug()<<"REC_ERROR";
+                return REC_ERROR;
+            }
+            else if(data_rx[3] == BAD_PACKET)
+            {
+                error_("Ошибка CRC\r");
+                qDebug()<<"CRC_ERROR";
                 return REC_ERROR;
             }
         }
     }
 
     return BAD_PACKET;
-
-    //data_rx.clear();
-    //return 0;//Если все в плохо - отправляем "пустоту"
 }

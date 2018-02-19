@@ -16,39 +16,17 @@
 #include <QTextCodec>
 
 
-#define GET_STATUS     0x01 // запрос статуса устройства на линии
-
-#define SEND_DATA      0x02 // передача массива данных
-#define SEND_FH_PARAM  0x03 // передача текущих параметров гарнитуры
-#define SEND_FH_KEY    0x04 // передача ключа шифрования
-#define SEND_FH_CR_TP  0x05 // передача типа шифрования
-
-#define GET_FH_PARAM   0x23 // запрос текущих параметров гарнитуры
-#define GET_FH_KEY     0x24 // запрос ключа шифрования
-#define GET_FH_CR_TP   0x25 // запрос типа шифрования
-
-#define REC_OK         0x12 // подтверждение безошибочного приёма данных
-#define REC_ERROR      0x13 // в процессе приёма возникли ошибки
-#define STATUS_OK      0x10 // устройство работает в штатном режиме
-#define STATUS_BAD     0x11 // устройство работает некорректно
-#define NO_COMAND      0x14 // принятой команды нет в списке
-
-#define SB             0xaa
-
-#define ADR_PC         0x1
-#define ADR_HF         0x3
-#define ADR_TX(x)      x<<4
-#define ADR_REC(x)     x
-
-unsigned char buf_DataTxK[20];//массив посылки ключа
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
+    ui->lineEdit->setMaxLength(32);
+
+    //Показать доступнуе COM-порты------------------------------------------------------------
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
-        ui->comboBoxCom->addItem(info.portName());
+             ui->comboBoxCom->addItem(info.portName());
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)) ,this, SLOT(checkCustomBaudRatePolicy(int)));
 
@@ -57,36 +35,36 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxBaudRate->addItem(QLatin1String("19200"), QSerialPort::Baud19200);
     ui->comboBoxBaudRate->addItem(QLatin1String("9600"), QSerialPort::Baud9600);
     ui->comboBoxBaudRate->addItem(QLatin1String("Custom"));
-   // fill data bits
+    // Длина потока
     ui->comboBoxDataBits->addItem(QLatin1String("5"), QSerialPort::Data5);
     ui->comboBoxDataBits->addItem(QLatin1String("6"), QSerialPort::Data6);
     ui->comboBoxDataBits->addItem(QLatin1String("7"), QSerialPort::Data7);
     ui->comboBoxDataBits->addItem(QLatin1String("8"), QSerialPort::Data8);
     ui->comboBoxDataBits->setCurrentIndex(3);
-   // fill parity
+    // Определение бита четности
     ui->comboBoxParity->addItem(QLatin1String("None"), QSerialPort::NoParity);
     ui->comboBoxParity->addItem(QLatin1String("Even"), QSerialPort::EvenParity);
     ui->comboBoxParity->addItem(QLatin1String("Odd"), QSerialPort::OddParity);
     ui->comboBoxParity->addItem(QLatin1String("Mark"), QSerialPort::MarkParity);
     ui->comboBoxParity->addItem(QLatin1String("Space"), QSerialPort::SpaceParity);
-   // fill stop bits
+    // Определение стопового бита
     ui->comboBoxStopBits->addItem(QLatin1String("1"), QSerialPort::OneStop);
     #ifdef Q_OS_WIN
     ui->comboBoxStopBits->addItem(QLatin1String("1.5"), QSerialPort::OneAndHalfStop);
     #endif
     ui->comboBoxStopBits->addItem(QLatin1String("2"), QSerialPort::TwoStop);
-   // fill flow control
+    // Контроль потока
     ui->comboBoxFlowControl->addItem(QLatin1String("None"), QSerialPort::NoFlowControl);
     ui->comboBoxFlowControl->addItem(QLatin1String("RTS/CTS"), QSerialPort::HardwareControl);
     ui->comboBoxFlowControl->addItem(QLatin1String("XON/XOFF"), QSerialPort::SoftwareControl);
 
+    //Отправить посылку записанную в QLineEdit (текстовое поле)
     connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(on_lineEdit_returnPressed()));
-    //connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(send_key(QByteArray)));
 
     //Формирование потока
-    QThread *thread_New = new QThread;//Создаем поток для порта платы
+    QThread *thread_New = new QThread;//Создаем поток для порта гарнитуры
     Port *PortNew = new Port();//Создаем обьект по классу
-    PortNew->moveToThread(thread_New);//помешаем класс  в поток
+    PortNew->moveToThread(thread_New);//Помещаем класс  в поток
     PortNew->thisPort.moveToThread(thread_New);//Помещаем сам порт в поток
     connect(PortNew, SIGNAL(error_(QString)), this, SLOT(Print(QString)));//Лог ошибок
     connect(thread_New, SIGNAL(started()), PortNew, SLOT(process_Port()));//Переназначения метода run
@@ -94,16 +72,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(thread_New, SIGNAL(finished()), PortNew, SLOT(deleteLater()));//Удалить поток нафиг
     connect(PortNew, SIGNAL(finished_Port()), thread_New, SLOT(deleteLater()));//Удалить поток нафиг
     connect(this,SIGNAL(savesettings(QString,int,int,int,int,int)),PortNew,SLOT(Write_Settings_Port(QString,int,int,int,int,int)));//Слот - ввод настроек
-    //connect(ui->checkBox, SIGNAL(clicked()), this, SLOT(on_checkBox_stateChanged(int arg1)));
-    //connect(ui->checkBox, SIGNAL(clicked()), PortNew,SLOT(ConnectPort()));
-    connect(ui->pushButton_5, SIGNAL(clicked()),PortNew,SLOT(ConnectPort()));
-    connect(ui->pushButton_6, SIGNAL(clicked()),PortNew,SLOT(DisconnectPort()));
+    connect(ui->pushButton_5, SIGNAL(clicked()),PortNew,SLOT(ConnectPort()));//Подключение порта
+    connect(ui->pushButton_6, SIGNAL(clicked()),PortNew,SLOT(DisconnectPort()));//Отключение порта
     connect(PortNew, SIGNAL(outPort(QString)), this, SLOT(Print(QString)));//Лог ошибок
-    connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));
-    connect(PortNew, SIGNAL(ReadInPort()),this,SLOT(Print(QByteArray)));
-    //connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(send_key(QByteArray)));
-    connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));
-    connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));
+    connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));//Запись в порт по готовности
+    connect(PortNew, SIGNAL(ReadInPort()),this,SLOT(Print(QByteArray)));//Отображение принятой обработанной посылки
+    connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
+    connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
     thread_New->start();
 }
 
@@ -111,7 +86,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-//Обновление параметров
+//Обновление параметров----------------------------------------------------------------------
 void MainWindow::on_pushButton_4_clicked()
 {
     ui->comboBoxCom->clear();
@@ -121,6 +96,7 @@ void MainWindow::on_pushButton_4_clicked()
     }
 }
 
+//Выбор скорости------------------------------------------------------------------------------
 void MainWindow::checkCustomBaudRatePolicy(int idx)
 {
     bool isCustomBaudRate = !ui->comboBoxBaudRate->itemData(idx).isValid();
@@ -130,41 +106,73 @@ void MainWindow::checkCustomBaudRatePolicy(int idx)
         ui->comboBoxBaudRate->clearEditText();
     }
 }
-
+QByteArray buf_DataTxK;//массив посылки ключа
+//Формирование посылки в QLine Edit-----------------------------------------------------------
 void MainWindow::on_lineEdit_returnPressed()
 {
-    QByteArray data; // Текстовая переменная
-    QString input = ui->lineEdit->text();
-    QStringList list1 = input.split(" ");
-    data = ui->lineEdit->text().toLocal8Bit().toHex() + '\r'; // Присвоение "data" значения из EnterText
+    //QByteArray data; // Текстовая переменная
+    //data = ui->lineEdit->text().toLocal8Bit().toHex() + '\r'; // Присвоение "data" значения из EnterText
+    QString input = ui->lineEdit->text();// Присвоение "input" значения из EnterText
+    QString input_spaces;//Для вставки пробелов
+    QByteArray senddata_crc;//Для расчета CRC
     QByteArray senddata;
+    QByteArray DataTxK;
+    quint16 crc;
+
+    if(input.length() < 31)
+    {
+        for(int i = input.length(); i < 32; i++)
+            input += "0";
+    }
+
+    if(input[2] != " ")//если третий символ не пробел
+    {
+        for(int i = 0; i < input.length(); i = i + 3)
+            input_spaces = input.insert(i, " ");//вставляем пробелы в нужные маста
+        input = input_spaces.remove(0, 1);//удаляем нулевой пробел
+    }
+
+    QStringList list1 = input.split(" ");//Для разделения на байты по пробелу
     int size = list1.size();
-    for (int i=0; i < size; i++)
+    for (int i = 0 ; i < size; i++)// Разделение по пробелу
     {
         QString ran = list1 [i];
         bool ok;
-        senddata[i]=ran.toInt(&ok,16);
+        senddata[i] = ran.toInt(&ok,16);
     }
-   // PortNew->WriteToPort(senddata); // Отправка данных в порт
-    Print("Load key"); // Вывод данных в консоль
-    writeData(senddata);
-    readyRead();
 
+    DataTxK[0] = SB;//стартовый байт
+    DataTxK[1] = senddata_crc[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
+    DataTxK[2] = senddata_crc[1] = 0x10;//Длина посылки
+    DataTxK[3] = senddata_crc[2] = SEND_FH_KEY;//Ctrl
+
+    for (int i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
+        {
+            DataTxK[j] = senddata_crc[k] = senddata[i];//формирование посылки
+        }
+
+    crc = Crc16(senddata_crc, 19);//Расчет CRC
+    DataTxK[20] = (crc & 0xFF00)>>8;
+    DataTxK[21] = crc & 0x00FF;
+    Print("\rЗагрузка ключа в гарнитуру"); // Вывод данных в консоль
+    writeData(DataTxK);//Запись в порт
+    readyRead();//Порт готов к чтению
 }
 
-void MainWindow::Print(QString data)  //QString data
+//Функция вывода на консоль-----------------------------------------------------------------
+void MainWindow::Print(QString data)
 {
     ui->plainTextEdit->textCursor().insertText(QString(data) + '\r');
     ui->plainTextEdit->moveCursor(QTextCursor::End);
 }
 
-void MainWindow::on_pushButton_7_clicked()
+void MainWindow::on_pushButton_7_clicked()//Сохранение настроек порта
 {
     savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
                  ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
 
 }
-//расчет CRC
+//Расчет CRC---------------------------------------------------------------------------------
 quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
 {
     unsigned short crc =0xFFFF;
@@ -188,35 +196,34 @@ quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
         }
     return crc;
 }
-//Запрос статуса устройства
+
+//Запрос статуса устройства-----------------------------------------------------
 void MainWindow::on_pushButton_3_clicked()
 {
-    QByteArray DataTxC(6,0);
-    QByteArray DataTx(9,0);
-    int i = 0;
+    QByteArray DataTxC(6,0);//массив для рассчета CRC посылки
+    QByteArray DataTx(9,0);//массив данных
     quint16 crc;
-    DataTx[0] = SB;
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));
-    DataTx[2] = DataTxC[1] = 0x03;
-    DataTx[3] = DataTxC[2] = GET_FH_KEY;
+
+    DataTx[0] = SB;//стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
+    DataTx[2] = DataTxC[1] = 0x03;//Длина посылки
+    DataTx[3] = DataTxC[2] = GET_FH_KEY;//Ctrl
     DataTx[4] = DataTxC[3] = 0x01;
     DataTx[5] = DataTxC[4] = 0x02;
     DataTx[6] = DataTxC[5] = 0x03;
-    crc = Crc16(DataTxC, 6);
+    crc = Crc16(DataTxC, 6);//Расчет CRC
     DataTx[7] = (crc & 0xFF00)>>8;
     DataTx[8] = crc & 0x00FF;
-    Print("Get key"); // Вывод данных в консоль
-    writeData(DataTx);
+    Print("Прочитать ключ"); // Вывод данных в консоль
+    writeData(DataTx);//Запись в порт
     readyRead();
-    for(i = 0; i < 9; i++)
-    {
-        qDebug()<<DataTx[i];
-    }
-     //ui->lineEdit->setText(QString(DataTx.toHex().constData()));
+    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+
+    //ui->lineEdit->setText(QString(DataTx.toHex().constData()));
     //ui->lineEdit->setText(QString(DataTx.constData()));//toHex().
 }
 
-//Сгенеррировать ключ и сформировать посылку
+//Сгенеррировать ключ и сформировать посылку--------------------------------------
 void MainWindow::on_pushButton_clicked()
 {
     int i, j, k;
@@ -228,135 +235,23 @@ void MainWindow::on_pushButton_clicked()
 
     DataTxK[0] = SB;//стартовый байт
     DataTxK[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
-    DataTxK[2] = DataTxC[1] = 0x10;
-    DataTxK[3] = DataTxC[2] = SEND_FH_KEY;
+    DataTxK[2] = DataTxC[1] = 0x10;//Длина посылки
+    DataTxK[3] = DataTxC[2] = SEND_FH_KEY;//Ctrl
 
     for (i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
         {
             arr[i] = Random::get(10, 99 );//формирование массива случайных чисел
             DataTxK[j] = DataTxC[k] = arr[i];//формирование посылки
-            //qDebug()<<arr.toHex();//отображение в дебагере
         }
 
-    crc = Crc16(DataTxC, 19);
+    crc = Crc16(DataTxC, 19);//Расчет CRC
     DataTxK[20] = (crc & 0xFF00)>>8;
     DataTxK[21] = crc & 0x00FF;
 
-//    QString str(DataTxK);
-//    qDebug() << str;
-//    str.replace(QRegExp("(..)[^$]"), QString("\\1 "));
-//    qDebug() << str;
-//    ui->lineEdit->setText(QString(str.constData()).toUpper().toLocal8Bit().toHex());
-
     for (i = 0; i < 22; i++)
         {
-
-            buf_DataTxK[i] = DataTxK[i];//формирование посылки
-            //qDebug()<<arr.toHex();//отображение в дебагере
+            buf_DataTxK[i] = DataTxK[i];//формирование посылки            
         }
-    ui->lineEdit->setText(QByteArray(DataTxK.constData()).toHex().toUpper());
+    qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
+    ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
 }
-
-
-//void MainWindow::send_key(QByteArray data)
-//{
-//    QByteArray data_send;
-//    for (int i = 0; i < 22; i++)
-//        {
-
-//            data_send[i] = buf_DataTxK[i];//формирование посылки
-//            //qDebug()<<arr.toHex();//отображение в дебагере
-//        }
-//    writeData(data_send);
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//void MainWindow::RedAnswer()
-//{
-
-//}
-
-//void MainWindow::on_checkBox_stateChanged(int arg1)
-//{
-//    if(arg1)
-//    {
-//        savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
-//                     ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
-//        //PortNew.ConnectPort();
-//        serial->open(QSerialPort::ReadWrite);
-//        ui->comboBoxCom->setDisabled(true);
-//        ui->comboBoxBaudRate->setDisabled(true);
-//        ui->comboBoxDataBits->setDisabled(true);
-//        ui->comboBoxFlowControl->setDisabled(true);
-//        ui->comboBoxParity->setDisabled(true);
-//        ui->comboBoxStopBits->setDisabled(true);
-//        ui->pushButton_4->setDisabled(true);
-//        ui->checkBox->setStyleSheet("background-color: green");
-//        ui->checkBox->setText("  ВКЛЮЧЕНО");
-
-//    }
-//    else
-//    {
-//        //PortNew.DisconnectPort();
-//        serial->close();
-
-//        ui->comboBoxCom->setEnabled(true);
-//        ui->comboBoxBaudRate->setEnabled(true);
-//        ui->comboBoxDataBits->setEnabled(true);
-//        ui->comboBoxFlowControl->setEnabled(true);
-//        ui->comboBoxParity->setEnabled(true);
-//        ui->comboBoxStopBits->setEnabled(true);
-//        ui->pushButton_4->setEnabled(true);
-//        PortNew.DisconnectPort();
-//        ui->checkBox->setStyleSheet("background-color: red");
-//        ui->checkBox->setText("  ОТКЛЮЧЕНО");
-//    }
-//}
-
-//void MainWindow::on_checkBox_toggled(bool checked)
-//{
-//    if(checked)
-//    {
-//        savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
-//                     ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
-//        PortNew.ConnectPort();
-//        ui->comboBoxCom->setDisabled(true);
-//        ui->comboBoxBaudRate->setDisabled(true);
-//        ui->comboBoxDataBits->setDisabled(true);
-//        ui->comboBoxFlowControl->setDisabled(true);
-//        ui->comboBoxParity->setDisabled(true);
-//        ui->comboBoxStopBits->setDisabled(true);
-//        ui->pushButton_4->setDisabled(true);
-//        ui->checkBox->setStyleSheet("background-color: green");
-//        ui->checkBox->setText("  ВКЛЮЧЕНО");
-
-//    }
-//    else
-//    {
-//        ui->checkBox->setStyleSheet("background-color: red");
-//        ui->checkBox->setText("  ОТКЛЮЧЕНО");
-//        ui->comboBoxCom->setEnabled(true);
-//        ui->comboBoxBaudRate->setEnabled(true);
-//        ui->comboBoxDataBits->setEnabled(true);
-//        ui->comboBoxFlowControl->setEnabled(true);
-//        ui->comboBoxParity->setEnabled(true);
-//        ui->comboBoxStopBits->setEnabled(true);
-//        ui->pushButton_4->setEnabled(true);
-//        PortNew.DisconnectPort();
-//        ui->checkBox->setStyleSheet("background-color: red");
-//        ui->checkBox->setText("  ОТКЛЮЧЕНО");
-//    }
-//}

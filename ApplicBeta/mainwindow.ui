@@ -28,8 +28,17 @@
 color:white
 </string>
       </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="midLineWidth">
+       <number>42</number>
+      </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page">
        <property name="geometry">
@@ -41,7 +50,7 @@ color:white
         </rect>
        </property>
        <attribute name="label">
-        <string>Настройка COM-порта</string>
+        <string>                                              Настройка COM-порта</string>
        </attribute>
        <widget class="QLabel" name="setComPort">
         <property name="geometry">
@@ -135,33 +144,6 @@ color:white
          </rect>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="geometry">
-         <rect>
-          <x>220</x>
-          <y>60</y>
-          <width>191</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <weight>50</weight>
-          <italic>false</italic>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color:rgb(241, 0, 2);</string>
-        </property>
-        <property name="text">
-         <string>ОТКЛЮЧЕН</string>
-        </property>
-       </widget>
        <widget class="QLabel" name="setParityBits">
         <property name="geometry">
          <rect>
@@ -179,7 +161,7 @@ color:white
         <property name="geometry">
          <rect>
           <x>220</x>
-          <y>140</y>
+          <y>430</y>
           <width>191</width>
           <height>41</height>
          </rect>
@@ -228,13 +210,13 @@ color:white
         <property name="geometry">
          <rect>
           <x>220</x>
-          <y>280</y>
+          <y>140</y>
           <width>191</width>
           <height>41</height>
          </rect>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color:rgb(89, 89, 89)</string>
+         <string notr="true">background-color:rgb(241, 0, 2)</string>
         </property>
         <property name="text">
          <string>Подключить порт</string>
@@ -244,7 +226,7 @@ color:white
         <property name="geometry">
          <rect>
           <x>220</x>
-          <y>360</y>
+          <y>210</y>
           <width>191</width>
           <height>41</height>
          </rect>
@@ -260,7 +242,7 @@ color:white
         <property name="geometry">
          <rect>
           <x>220</x>
-          <y>210</y>
+          <y>60</y>
           <width>191</width>
           <height>41</height>
          </rect>
@@ -296,16 +278,25 @@ color:white
         </rect>
        </property>
        <attribute name="label">
-        <string>Ключи и Шифрование</string>
+        <string>                                              Ключи и Шифрование</string>
        </attribute>
        <widget class="QPushButton" name="pushButton">
         <property name="geometry">
          <rect>
-          <x>0</x>
+          <x>10</x>
           <y>10</y>
           <width>181</width>
           <height>41</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>MS Shell Dlg 2</family>
+          <pointsize>10</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color:rgb(89, 89, 89)</string>
@@ -317,7 +308,7 @@ color:white
        <widget class="QPushButton" name="pushButton_2">
         <property name="geometry">
          <rect>
-          <x>0</x>
+          <x>10</x>
           <y>70</y>
           <width>181</width>
           <height>41</height>
@@ -333,7 +324,7 @@ color:white
        <widget class="QPushButton" name="pushButton_3">
         <property name="geometry">
          <rect>
-          <x>0</x>
+          <x>10</x>
           <y>130</y>
           <width>181</width>
           <height>41</height>
@@ -380,7 +371,7 @@ color:white
         </rect>
        </property>
        <attribute name="label">
-        <string>Параметры гарнитуры</string>
+        <string>                                               Параметры гарнитуры</string>
        </attribute>
       </widget>
      </widget>

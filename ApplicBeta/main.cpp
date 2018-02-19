@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication::setOrganizationName( "X" );
+    QApplication::setOrganizationName( "Circuit Engenering Technologies" );
     QApplication::setOrganizationDomain( "___________" );
-    QApplication::setApplicationName( "Y" );
+    QApplication::setApplicationName( "AplicBeta" );
 
 
     QApplication a(argc, argv);

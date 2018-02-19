@@ -2,10 +2,10 @@
 #define PORT_H
 
 #include <QObject>
-#include <QtSerialPort/QSerialPort>      //deklarate work with the port
+#include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 
-
+#define SB             0xaa // стартовый байт
 #define GET_STATUS     0x01 // запрос статуса устройства на линии
 
 #define SEND_DATA      0x02 // передача массива данных
@@ -13,17 +13,17 @@
 #define SEND_FH_KEY    0x04 // передача ключа шифрования
 #define SEND_FH_CR_TP  0x05 // передача типа шифрования
 
+#define STATUS_OK      0x10 // устройство работает в штатном режиме
+#define STATUS_BAD     0x11 // устройство работает некорректно
+#define REC_OK         0x12 // подтверждение безошибочного приёма данных
+#define REC_ERROR      0x13 // в процессе приёма возникли ошибки
+#define NO_COMAND      0x14 // принятой команды нет в списке
+#define BAD_PACKET     0x15 // ошибка CRC
+
+
 #define GET_FH_PARAM   0x23 // запрос текущих параметров гарнитуры
 #define GET_FH_KEY     0x24 // запрос ключа шифрования
 #define GET_FH_CR_TP   0x25 // запрос типа шифрования
-
-#define REC_OK         0x12 // подтверждение безошибочного приёма данных
-#define REC_ERROR      0x13 // в процессе приёма возникли ошибки
-#define STATUS_OK      0x10 // устройство работает в штатном режиме
-#define STATUS_BAD     0x11 // устройство работает некорректно
-#define NO_COMAND      0x14 // принятой команды нет в списке
-#define BAD_PACKET     0x15
-#define SB             0xaa
 
 #define ADR_PC         0x1
 #define ADR_HF         0x3
@@ -31,6 +31,7 @@
 #define ADR_REC(x)     x
 
 #define TIMEOUT         100
+
 struct Settings
 {
     QString                  name;
@@ -75,9 +76,7 @@ public slots:
     void process_Port();
 
     void WriteToPort(QByteArray data);
-    //bool WriteToPort(QByteArray data);
 
-    //void ReadInPort();
     uint8_t ReadInPort();
 
     quint16 Crc16(QByteArray pcBlock, quint16 len);
@@ -85,7 +84,7 @@ public slots:
     void tx_get_status();
     void tx_get_fh_param();
     void tx_get_fh_key();
-    void tx_rec_ok();
+    void rx_rec_ok();
 
 private slots:
 
