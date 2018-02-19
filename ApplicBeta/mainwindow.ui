@@ -38,7 +38,7 @@ color:white
        <number>42</number>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page">
        <property name="geometry">
@@ -46,7 +46,7 @@ color:white
          <x>0</x>
          <y>0</y>
          <width>432</width>
-         <height>530</height>
+         <height>470</height>
         </rect>
        </property>
        <attribute name="label">
@@ -274,11 +274,11 @@ color:white
          <x>0</x>
          <y>0</y>
          <width>432</width>
-         <height>530</height>
+         <height>470</height>
         </rect>
        </property>
        <attribute name="label">
-        <string>                                              Ключи и Шифрование</string>
+        <string>                                                  Ключи и Шифрование</string>
        </attribute>
        <widget class="QPushButton" name="pushButton">
         <property name="geometry">
@@ -367,11 +367,11 @@ color:white
          <x>0</x>
          <y>0</y>
          <width>432</width>
-         <height>530</height>
+         <height>470</height>
         </rect>
        </property>
        <attribute name="label">
-        <string>                                               Параметры гарнитуры</string>
+        <string>                                                  Параметры гарнитуры</string>
        </attribute>
       </widget>
      </widget>

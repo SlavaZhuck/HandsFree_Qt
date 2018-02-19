@@ -106,7 +106,9 @@ void MainWindow::checkCustomBaudRatePolicy(int idx)
         ui->comboBoxBaudRate->clearEditText();
     }
 }
+
 QByteArray buf_DataTxK;//массив посылки ключа
+
 //Формирование посылки в QLine Edit-----------------------------------------------------------
 void MainWindow::on_lineEdit_returnPressed()
 {

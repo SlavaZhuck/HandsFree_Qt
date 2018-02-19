@@ -3,10 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication::setOrganizationName( "Circuit Engenering Technologies" );
-    QApplication::setOrganizationDomain( "___________" );
+    QApplication::setOrganizationName( "Circuit Engineering Technologies" );
     QApplication::setApplicationName( "AplicBeta" );
-
 
     QApplication a(argc, argv);
     MainWindow w;
