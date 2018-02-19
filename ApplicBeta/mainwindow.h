@@ -45,6 +45,8 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void showPortInfo(int idx);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort *serial;

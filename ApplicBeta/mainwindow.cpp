@@ -28,7 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
              ui->comboBoxCom->addItem(info.portName());
 
-    connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)) ,this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->comboBoxCom, SIGNAL(currentIndexChanged(int)), this, SLOT(showPortInfo(int)));
 
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->comboBoxBaudRate->addItem(QLatin1String("38400"), QSerialPort::Baud38400);
@@ -127,7 +128,7 @@ void MainWindow::on_lineEdit_returnPressed()
             input += "0";
     }
 
-    if(input[2] != " ")//если третий символ не пробел
+    if(input[2] != ' ')//если третий символ не пробел
     {
         for(int i = 0; i < input.length(); i = i + 3)
             input_spaces = input.insert(i, " ");//вставляем пробелы в нужные маста
@@ -256,4 +257,17 @@ void MainWindow::on_pushButton_clicked()
         }
     qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
     ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
+}
+
+void MainWindow::showPortInfo(int idx)
+{
+    if (idx != -1)
+    {
+        QStringList list = ui->comboBoxCom->itemData(idx).toStringList();
+        ui->label->setText(tr("Описание: %1").arg(list.at(1)));
+        ui->label_2->setText(tr("Производитель: %1").arg(list.at(2)));
+        ui->label_3->setText(tr("Размещение: %1").arg(list.at(3)));
+        ui->label_4->setText(tr("ID производителя: %1").arg(list.at(4)));
+        ui->label_5->setText(tr("ID устройства: %1").arg(list.at(5)));
+    }
 }
