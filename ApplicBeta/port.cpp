@@ -49,17 +49,27 @@ void Port :: ConnectPort(void)
             {
                 error_((SettingsPort.name+ "  Порт открыт:\r"));//если открыт - прнимаем надпись "Порт открыт"
                 uint8_t status = 0;
+                int k = 0;
 
-                while(status != STATUS_OK)//Идет запрос статуса пока не вернется STATUS_OK
+                while((status != STATUS_OK) && (k < 10))//Идет запрос статуса пока не вернется STATUS_OK
                 {
                     QThread::sleep(1);
                     tx_get_status();//Запрос статуса
                     status = ReadInPort();
+                    k++;
                 }
-                tx_get_fh_param();//Запрос параметров
-                ReadInPort();
-                tx_get_fh_key();//Запрос ключа шифрования записанного на гарнитуре
-                ReadInPort();
+                if(k >= 9)
+                {
+                    DisconnectPort();
+                }
+                else
+                {
+                    tx_get_fh_param();//Запрос параметров
+                    ReadInPort();
+                    tx_get_fh_key();//Запрос ключа шифрования записанного на гарнитуре
+                    ReadInPort();
+                }
+
             }
         }
         else

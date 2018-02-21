@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
     PortNew->thisPort.moveToThread(thread_New);//Помещаем сам порт в поток
     connect(PortNew, SIGNAL(error_(QString)), this, SLOT(Print(QString)));//Лог ошибок
     connect(thread_New, SIGNAL(started()), PortNew, SLOT(process_Port()));//Переназначения метода run
-    connect(PortNew, SIGNAL(finished_Port()), thread_New, SLOT(quit()));//Переназначение метода выход
+    connect(PortNew, SIGNAL(finished_Port()), thread_New, SLOT(quit()));//Переназначение метод выхода
     connect(thread_New, SIGNAL(finished()), PortNew, SLOT(deleteLater()));//Удалить поток нафиг
     connect(PortNew, SIGNAL(finished_Port()), thread_New, SLOT(deleteLater()));//Удалить поток нафиг
     connect(this,SIGNAL(savesettings(QString,int,int,int,int,int)),PortNew,SLOT(Write_Settings_Port(QString,int,int,int,int,int)));//Слот - ввод настроек
@@ -270,15 +270,14 @@ quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
 //Отображение МАС адреса гарнитуры
 void MainWindow::MacAdr()
 {
-    QByteArray param = PortNew->ParamsGet();
+    QByteArray param = PortNew->ParamsGet();//Получаем значение param
     QString para_str(param.toHex().toUpper());
     for(int i = 0; i < para_str.length(); i = i + 3)
         para_str =para_str.insert(i, ":");  //вставляем ":" в нужные маста
-    para_str = para_str.remove(0, 1);       //удаляем нулевой пробел
+    para_str = para_str.remove(0, 1);       //удаляем нулевой символ
     qDebug()<<param.toHex().toUpper();
 
     ui->label->setText("МАС адрес гарнитуры: "+ para_str);
-    ui->label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 }
 
 
