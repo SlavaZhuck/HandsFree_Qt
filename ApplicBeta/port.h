@@ -58,15 +58,15 @@ public:
     Settings    SettingsPort;
 
 signals:
-
     void finished_Port();
 
     void error_(QString err);
 
     void outPort(QString data);
 
-public slots:
+    void sendParam();
 
+public slots:
     void DisconnectPort();
 
     void ConnectPort(void);
@@ -81,9 +81,14 @@ public slots:
 
     quint16 Crc16(QByteArray pcBlock, quint16 len);
 
+    QByteArray ParamsGet();
+
     void tx_get_status();
+
     void tx_get_fh_param();
+
     void tx_get_fh_key();
+
     void rx_rec_ok();
 
 private slots:

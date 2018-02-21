@@ -38,7 +38,7 @@ color:white
        <number>42</number>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page">
        <property name="geometry">
@@ -357,6 +357,25 @@ color:white
        <attribute name="label">
         <string>                                                  Параметры гарнитуры</string>
        </attribute>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>231</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>MAC адрес гарнитуры:</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </item>

@@ -12,13 +12,13 @@ Port :: Port(QObject *parent) : QObject(parent)
 
 Port :: ~Port()
 {
-    qDebug("Oоps");//Виден в дебаге при отключении
+    qDebug("Всем спасибо и досвидания");//Виден в дебаге при отключении
     emit finished_Port();
 }
 
 void Port :: process_Port()
 {
-    qDebug("Hi");//виден в дебаге при подключении
+    qDebug("Здаров");//виден в дебаге при подключении
 }
 
 //Запись насроек----------------------------------------------------------------------------------
@@ -46,8 +46,8 @@ void Port :: ConnectPort(void)
                 && thisPort.setFlowControl(SettingsPort.flowControl))
         {
             if(thisPort.isOpen())
-            {//если открыт - прнимаем надпись "Порт открыт"
-                error_((SettingsPort.name+ "  Порт открыт:\r"));
+            {
+                error_((SettingsPort.name+ "  Порт открыт:\r"));//если открыт - прнимаем надпись "Порт открыт"
                 uint8_t status = 0;
 
                 while(status != STATUS_OK)//Идет запрос статуса пока не вернется STATUS_OK
@@ -110,7 +110,6 @@ quint16 Port::Crc16(QByteArray pcBlock, quint16 len)
 {
     unsigned short crc =0xFFFF;
     unsigned char i;
-    //quint8 buf[25];
     unsigned char buf[len];
 
     for(int j = 0; j < len; j++)
@@ -134,64 +133,63 @@ quint16 Port::Crc16(QByteArray pcBlock, quint16 len)
 void Port::tx_get_status()
 {
     QByteArray DataTxC(3,0);//Массив для расчета CRC
-    QByteArray DataTx(6,0);//Массив данных
+    QByteArray DataTx(6,0); //Массив данных
     quint16 crc;
 
-    DataTx[0] = SB;//Стартовый байт
+    DataTx[0] = SB;         //Стартовый байт
     DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
-    DataTx[2] = DataTxC[1] = 0x00;//Длина данных
+    DataTx[2] = DataTxC[1] = 0x00;      //Длина данных
     DataTx[3] = DataTxC[2] = GET_STATUS;//Ctrl
-    crc = Crc16(DataTxC, 3);//расчет crc отправляемой посылки
-    DataTx[4] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
-    DataTx[5] = crc & 0x00FF;//расчет crc отправляемой посылки (дладший байт)
+    crc = Crc16(DataTxC, 3);            //расчет crc отправляемой посылки
+    DataTx[4] = (crc & 0xFF00)>>8;      //расчет crc отправляемой посылки (старший байт)
+    DataTx[5] = crc & 0x00FF;           //расчет crc отправляемой посылки (дладший байт)
 
-    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-
-    WriteToPort(DataTx);//Запись в порт
+    qDebug()<<DataTx.toHex().toUpper(); //Отображение в дебагере
+    WriteToPort(DataTx);                //Запись в порт
 }
 
 //Запрос текущих параметров гарнитуры---------------------------------------------------------------
 void Port::tx_get_fh_param()
 {
     QByteArray DataTxC(6,0);//Массив для расчета CRC
-    QByteArray DataTx(9,0);//Массив данных
+    QByteArray DataTx(9,0); //Массив данных
     quint16 crc;
 
-    DataTx[0] = SB;//Стартовый байт
+    DataTx[0] = SB;         //Стартовый байт
     DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
-    DataTx[2] = DataTxC[1] = 0x03;//Длина данных
+    DataTx[2] = DataTxC[1] = 0x03;        //Длина данных
     DataTx[3] = DataTxC[2] = GET_FH_PARAM;//Ctrl
     DataTx[4] = DataTxC[3] = 0x01;
     DataTx[5] = DataTxC[4] = 0x02;
     DataTx[6] = DataTxC[5] = 0x03;
-    crc = Crc16(DataTxC, 6);//расчет crc отправляемой посылки
+    crc = Crc16(DataTxC, 6);      //расчет crc отправляемой посылки
     DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
-    DataTx[8] = crc & 0x00FF;//расчет crc отправляемой посылки (дладший байт)
+    DataTx[8] = crc & 0x00FF;     //расчет crc отправляемой посылки (дладший байт)
 
     qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-    WriteToPort(DataTx);//Запись в порт
+    WriteToPort(DataTx);               //Запись в порт
 }
 
 //Запрос ключа шифрования--------------------------------------------------------------------------
 void Port::tx_get_fh_key()
 {
     QByteArray DataTxC(6,0);//Массив для расчета CRC
-    QByteArray DataTx(9,0);//Массив данных
+    QByteArray DataTx(9,0); //Массив данных
     quint16 crc;
 
-    DataTx[0] = SB;//Стартовый байт
+    DataTx[0] = SB;         //Стартовый байт
     DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
-    DataTx[2] = DataTxC[1] = 0x03;//Длина данных
+    DataTx[2] = DataTxC[1] = 0x03;      //Длина данных
     DataTx[3] = DataTxC[2] = GET_FH_KEY;//Ctrl
     DataTx[4] = DataTxC[3] = 0x01;
     DataTx[5] = DataTxC[4] = 0x02;
     DataTx[6] = DataTxC[5] = 0x03;
-    crc = Crc16(DataTxC, 6);//расчет crc отправляемой посылки
+    crc = Crc16(DataTxC, 6);      //расчет crc отправляемой посылки
     DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
-    DataTx[8] = crc & 0x00FF;//расчет crc отправляемой посылки (дладший байт)
+    DataTx[8] = crc & 0x00FF;     //расчет crc отправляемой посылки (дладший байт)
 
     qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-    WriteToPort(DataTx);//Запись в порт
+    WriteToPort(DataTx);               //Запись в порт
 }
 
 //Подтверждение безошибочного приема--------------------------------------------------------------
@@ -203,34 +201,31 @@ void Port::rx_rec_ok()
 
     DataTx[0] = SB;//Стартовый байт
     DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
-    DataTx[2] = DataTxC[1] = 0x00;//Длина данных
+    DataTx[2] = DataTxC[1] = 0x00;  //Длина данных
     DataTx[3] = DataTxC[2] = REC_OK;//Ctrl
-    crc = Crc16(DataTxC, 3);//расчет crc принятой посылки
-    DataTx[4] = (crc & 0xFF00)>>8;//расчет crc принимаемой посылки (старший байт)
-    DataTx[5] = crc & 0x00FF;//расчет crc принимаемой посылки (дладший байт)
+    crc = Crc16(DataTxC, 3);        //расчет crc принятой посылки
+    DataTx[4] = (crc & 0xFF00)>>8;  //расчет crc принимаемой посылки (старший байт)
+    DataTx[5] = crc & 0x00FF;       //расчет crc принимаемой посылки (дладший байт)
 
     qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-    WriteToPort(DataTx);//Запись в порт
+    WriteToPort(DataTx);               //Запись в порт
 }
 
+QByteArray buf_param;//Массив МАС адреса
 //Чтение в порт-------------------------------------------------------------------------------------
 uint8_t Port::ReadInPort()//Парсер
 {
-    QByteArray data_rx;//Массив принятых данных
+    QByteArray data_rx;                      //Массив принятых данных
     while(thisPort.waitForReadyRead(TIMEOUT))//Ожидание считывания посылки до конца
     {
-        data_rx.append(thisPort.readAll());//Чтение посылки до конца
+        data_rx.append(thisPort.readAll());  //Чтение посылки до конца
     }
 
-    unsigned short v_crc;//Принятый CRC
-    unsigned char  hb_crc = 0xff,//crc пришедшей посылки (старший байт)
-                   lb_crc = 0xff,//crc пришедшей посылки (младший байт)
+    unsigned short v_crc;          //Принятый CRC
+    unsigned char  hb_crc = 0xff,  //crc пришедшей посылки (старший байт)
+                   lb_crc = 0xff,  //crc пришедшей посылки (младший байт)
                    len_dat, lb, hb,//Длина данных, старший байт CRC, младший байт CRC
                    dat_adr, adr;
-//    if(data_rx.size() < 3)
-//    {
-//        return data_rx;
-//    }
 
     QByteArray buf_rx;//[data_rx[2] + 3];
     QByteArray key_buf;//в этот массив пишется ответ на запрос GET_FH_KEY
@@ -250,17 +245,17 @@ uint8_t Port::ReadInPort()//Парсер
     adr     = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF)))); //адрес, который должен быть
     if((lb == lb_crc) && (hb == hb_crc))                       //сравнение crc
     {
-        if(dat_adr == adr)                                      //сравнение адреса
+        if(dat_adr == adr)                                     //сравнение адреса
         {
             if(data_rx[3] == STATUS_OK)//Ответ на запрос статуса
             {
-                error_(("STATUS_OK"));//вывод на консоль
+                error_(("STATUS_OK")); //вывод на консоль
                 qDebug()<<"STATUS_OK";
                 return STATUS_OK;
             }
             else if(data_rx[3] == SEND_FH_PARAM)//Ответ на запрос параметров
             {
-                QByteArray buf_param;
+
 
                 for(int i = 0, j = 4; j < 10; i++, j++)
                 {
@@ -268,12 +263,13 @@ uint8_t Port::ReadInPort()//Парсер
                 }
                 QString str(buf_param.toHex().toUpper());
                 for(int i = 0; i < str.length(); i = i + 3)
-                    str =str.insert(i, ":");//вставляем ":" в нужные маста
-                str = str.remove(0, 1);//удаляем нулевой пробел
-                error_(("GET_PARAM"));//вывод на консоль
+                    str =str.insert(i, ":");  //вставляем ":" в нужные маста
+                str = str.remove(0, 1);       //удаляем нулевой пробел
+                error_(("GET_PARAM"));        //вывод на консоль
                 error_(("MAC адрес: " + str));//вывод на консоль
                 qDebug()<<"GET_PARAM";
-
+                ParamsGet();
+                sendParam();
                 return SEND_FH_PARAM;
             }
             else if(data_rx[3] == SEND_FH_KEY)//Ответ на запрос ключа шифрования
@@ -282,7 +278,7 @@ uint8_t Port::ReadInPort()//Парсер
                 {
                     key_buf[j] = buf_rx[i];
                 }
-                error_("Ключ:");//вывод на консоль
+                error_("Ключ:");                  //вывод на консоль
                 error_(key_buf.toHex().toUpper());//вывод на консоль записанного ключа
                 return SEND_FH_KEY;
             }
@@ -308,4 +304,11 @@ uint8_t Port::ReadInPort()//Парсер
     }
 
     return BAD_PACKET;
+}
+
+QByteArray Port::ParamsGet()
+{
+    QByteArray para = buf_param;
+
+    return para;
 }

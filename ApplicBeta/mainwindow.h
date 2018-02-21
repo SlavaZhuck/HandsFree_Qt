@@ -28,7 +28,13 @@ signals:
 
     void error(QSerialPort::SerialPortError);
 
+    void sendParam();
+
 private slots:
+    void on_pushButton_clicked();
+
+    void on_pushButton_3_clicked();
+
     void on_pushButton_4_clicked();
 
     void on_pushButton_5_clicked();
@@ -41,9 +47,7 @@ private slots:
 
     quint16 Crc16(QByteArray pcBlock, quint16 len);
 
-    void on_pushButton_3_clicked();
-
-    void on_pushButton_clicked();
+    void MacAdr();
 
 private:
     Ui::MainWindow *ui;

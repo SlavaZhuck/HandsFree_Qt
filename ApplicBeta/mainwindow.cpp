@@ -82,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(PortNew, SIGNAL(ReadInPort()),this,SLOT(Print(QByteArray)));//Отображение принятой обработанной посылки
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
+    connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
     thread_New->start();
 }
 
@@ -89,6 +90,67 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+//Сгенеррировать ключ и сформировать посылку--------------------------------------
+QByteArray buf_DataTxK;//массив посылки ключа
+void MainWindow::on_pushButton_clicked()
+{
+    int i, j, k;
+    ui->lineEdit->clear();
+    QByteArray arr(16,0);    //массив для записи случайных чисел
+    QByteArray DataTxC(19,0);//массив для рассчета CRC посылки
+    QByteArray DataTxK(22,0);//посылка
+    quint16 crc;
+
+    DataTxK[0] = SB;//стартовый байт
+    DataTxK[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
+    DataTxK[2] = DataTxC[1] = 0x10;       //Длина посылки
+    DataTxK[3] = DataTxC[2] = SEND_FH_KEY;//Ctrl
+
+    for (i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
+        {
+            arr[i] = Random::get(10, 99 );   //формирование массива случайных чисел
+            DataTxK[j] = DataTxC[k] = arr[i];//формирование посылки
+        }
+
+    crc = Crc16(DataTxC, 19);//Расчет CRC
+    DataTxK[20] = (crc & 0xFF00)>>8;
+    DataTxK[21] = crc & 0x00FF;
+
+    for (i = 0; i < 22; i++)
+        {
+            buf_DataTxK[i] = DataTxK[i];//формирование посылки
+        }
+    qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
+    ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
+}
+
+//Запрос статуса устройства-----------------------------------------------------
+void MainWindow::on_pushButton_3_clicked()
+{
+    QByteArray DataTxC(6,0);//массив для рассчета CRC посылки
+    QByteArray DataTx(9,0); //массив данных
+    quint16 crc;
+
+    DataTx[0] = SB;//стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
+    DataTx[2] = DataTxC[1] = 0x03;      //Длина посылки
+    DataTx[3] = DataTxC[2] = GET_FH_KEY;//Ctrl
+    DataTx[4] = DataTxC[3] = 0x01;
+    DataTx[5] = DataTxC[4] = 0x02;
+    DataTx[6] = DataTxC[5] = 0x03;
+    crc = Crc16(DataTxC, 6);//Расчет CRC
+    DataTx[7] = (crc & 0xFF00)>>8;
+    DataTx[8] = crc & 0x00FF;
+    Print("Прочитать ключ"); // Вывод данных в консоль
+    writeData(DataTx);       //Запись в порт
+    readyRead();
+    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+
+    //ui->lineEdit->setText(QString(DataTx.toHex().constData()));
+    //ui->lineEdit->setText(QString(DataTx.constData()));//toHex().
+}
+
 //Обновление параметров----------------------------------------------------------------------
 void MainWindow::on_pushButton_4_clicked()
 {
@@ -103,22 +165,15 @@ void MainWindow::on_pushButton_4_clicked()
 //Сохранение параметров порта----------------------------------------------------------------
 void MainWindow::on_pushButton_5_clicked()
 {
-    savesettings(ui->comboBoxCom->currentText(), ui->comboBoxBaudRate->currentText().toInt(),ui->comboBoxDataBits->currentText().toInt(),
-                 ui->comboBoxParity->currentText().toInt(), ui->comboBoxStopBits->currentText().toInt(), ui->comboBoxFlowControl->currentText().toInt());
+    savesettings(ui->comboBoxCom->currentText(),
+                 ui->comboBoxBaudRate->currentText().toInt(),
+                 ui->comboBoxDataBits->currentText().toInt(),
+                 ui->comboBoxParity->currentText().toInt(),
+                 ui->comboBoxStopBits->currentText().toInt(),
+                 ui->comboBoxFlowControl->currentText().toInt());
 }
 
-//Выбор скорости------------------------------------------------------------------------------
-void MainWindow::checkCustomBaudRatePolicy(int idx)
-{
-    bool isCustomBaudRate = !ui->comboBoxBaudRate->itemData(idx).isValid();
-    ui->comboBoxBaudRate->setEditable(isCustomBaudRate);
-    if(isCustomBaudRate)
-    {
-        ui->comboBoxBaudRate->clearEditText();
-    }
-}
 
-QByteArray buf_DataTxK;//массив посылки ключа
 
 //Формирование посылки в QLine Edit-----------------------------------------------------------
 void MainWindow::on_lineEdit_returnPressed()
@@ -170,6 +225,17 @@ void MainWindow::on_lineEdit_returnPressed()
     readyRead();//Порт готов к чтению
 }
 
+//Выбор скорости------------------------------------------------------------------------------
+void MainWindow::checkCustomBaudRatePolicy(int idx)
+{
+    bool isCustomBaudRate = !ui->comboBoxBaudRate->itemData(idx).isValid();
+    ui->comboBoxBaudRate->setEditable(isCustomBaudRate);
+    if(isCustomBaudRate)
+    {
+        ui->comboBoxBaudRate->clearEditText();
+    }
+}
+
 //Функция вывода на консоль-----------------------------------------------------------------
 void MainWindow::Print(QString data)
 {
@@ -177,13 +243,11 @@ void MainWindow::Print(QString data)
     ui->plainTextEdit->moveCursor(QTextCursor::End);
 }
 
-
 //Расчет CRC---------------------------------------------------------------------------------
 quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
 {
     unsigned short crc =0xFFFF;
     unsigned char i;
-    //quint8 buf[25];
     unsigned char buf[len];
 
     for(int j = 0; j < len; j++)
@@ -203,62 +267,19 @@ quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
     return crc;
 }
 
-//Запрос статуса устройства-----------------------------------------------------
-void MainWindow::on_pushButton_3_clicked()
+//Отображение МАС адреса гарнитуры
+void MainWindow::MacAdr()
 {
-    QByteArray DataTxC(6,0);//массив для рассчета CRC посылки
-    QByteArray DataTx(9,0);//массив данных
-    quint16 crc;
+    QByteArray param = PortNew->ParamsGet();
+    QString para_str(param.toHex().toUpper());
+    for(int i = 0; i < para_str.length(); i = i + 3)
+        para_str =para_str.insert(i, ":");  //вставляем ":" в нужные маста
+    para_str = para_str.remove(0, 1);       //удаляем нулевой пробел
+    qDebug()<<param.toHex().toUpper();
 
-    DataTx[0] = SB;//стартовый байт
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
-    DataTx[2] = DataTxC[1] = 0x03;//Длина посылки
-    DataTx[3] = DataTxC[2] = GET_FH_KEY;//Ctrl
-    DataTx[4] = DataTxC[3] = 0x01;
-    DataTx[5] = DataTxC[4] = 0x02;
-    DataTx[6] = DataTxC[5] = 0x03;
-    crc = Crc16(DataTxC, 6);//Расчет CRC
-    DataTx[7] = (crc & 0xFF00)>>8;
-    DataTx[8] = crc & 0x00FF;
-    Print("Прочитать ключ"); // Вывод данных в консоль
-    writeData(DataTx);//Запись в порт
-    readyRead();
-    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-
-    //ui->lineEdit->setText(QString(DataTx.toHex().constData()));
-    //ui->lineEdit->setText(QString(DataTx.constData()));//toHex().
+    ui->label->setText("МАС адрес гарнитуры: "+ para_str);
+    ui->label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 }
 
-//Сгенеррировать ключ и сформировать посылку--------------------------------------
-void MainWindow::on_pushButton_clicked()
-{
-    int i, j, k;
-    ui->lineEdit->clear();
-    QByteArray arr(16,0);//массив для записи случайных чисел
-    QByteArray DataTxC(19,0);//массив для рассчета CRC посылки
-    QByteArray DataTxK(22,0);//посылка
-    quint16 crc;
 
-    DataTxK[0] = SB;//стартовый байт
-    DataTxK[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//адрес
-    DataTxK[2] = DataTxC[1] = 0x10;//Длина посылки
-    DataTxK[3] = DataTxC[2] = SEND_FH_KEY;//Ctrl
-
-    for (i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
-        {
-            arr[i] = Random::get(10, 99 );//формирование массива случайных чисел
-            DataTxK[j] = DataTxC[k] = arr[i];//формирование посылки
-        }
-
-    crc = Crc16(DataTxC, 19);//Расчет CRC
-    DataTxK[20] = (crc & 0xFF00)>>8;
-    DataTxK[21] = crc & 0x00FF;
-
-    for (i = 0; i < 22; i++)
-        {
-            buf_DataTxK[i] = DataTxK[i];//формирование посылки            
-        }
-    qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
-    ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
-}
 
