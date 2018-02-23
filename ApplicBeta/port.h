@@ -2,6 +2,7 @@
 #define PORT_H
 
 #include <QObject>
+#include <QTimer>
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 
@@ -42,7 +43,6 @@ struct Settings
     QSerialPort::FlowControl flowControl;
 };
 
-class MainWindow;
 class Port : public QObject
 {
     Q_OBJECT
@@ -56,6 +56,8 @@ public:
     QSerialPort thisPort;
 
     Settings    SettingsPort;
+
+    int flagConnect = 0;
 
 signals:
     void finished_Port();
@@ -82,6 +84,8 @@ public slots:
     quint16 Crc16(QByteArray pcBlock, quint16 len);
 
     QByteArray ParamsGet();
+
+    QByteArray BatterGet();
 
     void tx_get_status();
 

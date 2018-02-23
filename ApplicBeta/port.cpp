@@ -60,6 +60,7 @@ void Port :: ConnectPort(void)
                 }
                 if(k >= 9)
                 {
+                    error_("Статус устройства не подтвержден\nв положенное время\r");
                     DisconnectPort();
                 }
                 else
@@ -68,6 +69,7 @@ void Port :: ConnectPort(void)
                     ReadInPort();
                     tx_get_fh_key();//Запрос ключа шифрования записанного на гарнитуре
                     ReadInPort();
+                    flagConnect = 1;
                 }
 
             }
@@ -222,6 +224,7 @@ void Port::rx_rec_ok()
 }
 
 QByteArray buf_param;//Массив МАС адреса
+QByteArray buf_batter;//Массив заряда батареи
 //Чтение в порт-------------------------------------------------------------------------------------
 uint8_t Port::ReadInPort()//Парсер
 {
@@ -265,21 +268,36 @@ uint8_t Port::ReadInPort()//Парсер
             }
             else if(data_rx[3] == SEND_FH_PARAM)//Ответ на запрос параметров
             {
+                for(int i = 0, j = 10; j < 12; i++, j++)
+                {
+                    buf_batter[i] = data_rx[j];
+                }
 
+                QByteArray compare_arr;
 
                 for(int i = 0, j = 4; j < 10; i++, j++)
                 {
-                    buf_param[i] = data_rx[j];
+                    compare_arr[i] = data_rx[j];
                 }
-                QString str(buf_param.toHex().toUpper());
-                for(int i = 0; i < str.length(); i = i + 3)
-                    str =str.insert(i, ":");  //вставляем ":" в нужные маста
-                str = str.remove(0, 1);       //удаляем нулевой пробел
-                error_(("GET_PARAM"));        //вывод на консоль
-                error_(("MAC адрес: " + str));//вывод на консоль
-                qDebug()<<"GET_PARAM";
-                ParamsGet();
-                sendParam();
+                if(compare_arr != buf_param)
+                {
+                    for(int i = 0, j = 4; j < 10; i++, j++)
+                    {
+                        buf_param[i] = data_rx[j];
+                    }
+
+                    QString str(buf_param.toHex().toUpper());
+                    for(int i = 0; i < str.length(); i = i + 3)
+                        str =str.insert(i, ":");  //вставляем ":" в нужные маста
+                    str = str.remove(0, 1);       //удаляем нулевой пробел
+                    error_(("GET_PARAM"));        //вывод на консоль
+                    error_(("MAC адрес: " + str));//вывод на консоль
+                    qDebug()<<"GET_PARAM";
+                    qDebug()<<("MAC адрес: " + str);
+                    ParamsGet();
+                    sendParam();
+                }
+                qDebug()<<data_rx.toHex().toUpper();
                 return SEND_FH_PARAM;
             }
             else if(data_rx[3] == SEND_FH_KEY)//Ответ на запрос ключа шифрования
@@ -316,9 +334,18 @@ uint8_t Port::ReadInPort()//Парсер
     return BAD_PACKET;
 }
 
+//Отсылаем значение buf_param в MainWindow
 QByteArray Port::ParamsGet()
 {
     QByteArray para = buf_param;
 
     return para;
+}
+
+//Отсылаем значение buf_batter в MainWindow
+QByteArray Port::BatterGet()
+{
+    QByteArray batter = buf_batter;
+
+    return  batter;
 }

@@ -18,6 +18,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    QTimer *ptimer;
+
 signals:
 
     void writeData(QByteArray data);
@@ -48,6 +50,10 @@ private slots:
     quint16 Crc16(QByteArray pcBlock, quint16 len);
 
     void MacAdr();
+
+    void TimerStart();
+
+    void GetBatter();
 
 private:
     Ui::MainWindow *ui;

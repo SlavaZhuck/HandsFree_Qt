@@ -20,14 +20,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-
     ui->setupUi(this);
     ui->lineEdit->setMaxLength(32);
+    ui->progressBar->setValue(1);
 
     //Показать доступнуе COM-порты------------------------------------------------------------
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
-             ui->comboBoxCom->addItem(info.portName());
+        ui->comboBoxCom->addItem(info.portName());
     }
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //Формирование потока
     QThread *thread_New = new QThread;//Создаем поток для порта гарнитуры
     Port *PortNew = new Port();//Создаем обьект по классу
-    PortNew->moveToThread(thread_New);//Помещаем класс  в поток
+    PortNew->moveToThread(thread_New);//Помещаем класс  в поток    
     PortNew->thisPort.moveToThread(thread_New);//Помещаем сам порт в поток
     connect(PortNew, SIGNAL(error_(QString)), this, SLOT(Print(QString)));//Лог ошибок
     connect(thread_New, SIGNAL(started()), PortNew, SLOT(process_Port()));//Переназначения метода run
@@ -171,13 +171,14 @@ void MainWindow::on_pushButton_5_clicked()
                  ui->comboBoxParity->currentText().toInt(),
                  ui->comboBoxStopBits->currentText().toInt(),
                  ui->comboBoxFlowControl->currentText().toInt());
+    QTimer *ptimer = new QTimer();
+    connect(ptimer, SIGNAL(timeout()),this, SLOT(TimerStart()));
+    ptimer->start(60000);
 }
-
-
 
 //Формирование посылки в QLine Edit-----------------------------------------------------------
 void MainWindow::on_lineEdit_returnPressed()
-{
+{    
     QString input = ui->lineEdit->text();// Присвоение "input" значения из EnterText
     QString input_spaces;//Для вставки пробелов
     QByteArray senddata_crc;//Для расчета CRC
@@ -188,13 +189,13 @@ void MainWindow::on_lineEdit_returnPressed()
     if(input.length() < 31)
     {
         for(int i = input.length(); i < 32; i++)
-            input += "0";
+            input += '0';
     }
 
     if(input[2] != " ")//если третий символ не пробел
     {
         for(int i = 0; i < input.length(); i = i + 3)
-            input_spaces = input.insert(i, " ");//вставляем пробелы в нужные маста
+            input_spaces = input.insert(i, ' ');//вставляем пробелы в нужные маста
         input = input_spaces.remove(0, 1);//удаляем нулевой пробел
     }
 
@@ -223,6 +224,7 @@ void MainWindow::on_lineEdit_returnPressed()
     Print("\rЗагрузка ключа в гарнитуру"); // Вывод данных в консоль
     writeData(DataTxK);//Запись в порт
     readyRead();//Порт готов к чтению
+
 }
 
 //Выбор скорости------------------------------------------------------------------------------
@@ -246,7 +248,7 @@ void MainWindow::Print(QString data)
 //Расчет CRC---------------------------------------------------------------------------------
 quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
 {
-    unsigned short crc =0xFFFF;
+    unsigned short crc = 0xFFFF;
     unsigned char i;
     unsigned char buf[len];
 
@@ -267,18 +269,59 @@ quint16 MainWindow::Crc16(QByteArray pcBlock, quint16 len)
     return crc;
 }
 
-//Отображение МАС адреса гарнитуры
+//Отображение МАС адреса гарнитуры-----------------------------------------------
 void MainWindow::MacAdr()
 {
     QByteArray param = PortNew->ParamsGet();//Получаем значение param
     QString para_str(param.toHex().toUpper());
     for(int i = 0; i < para_str.length(); i = i + 3)
-        para_str =para_str.insert(i, ":");  //вставляем ":" в нужные маста
+        para_str =para_str.insert(i, ':');  //вставляем ":" в нужные маста
     para_str = para_str.remove(0, 1);       //удаляем нулевой символ
     qDebug()<<param.toHex().toUpper();
 
     ui->label->setText("МАС адрес гарнитуры: "+ para_str);
+    GetBatter();
+}
+
+//Запрос таймером параметров----------------------------------------------------
+void MainWindow::TimerStart()
+{
+    QByteArray DataTxC(6,0);//Массив для расчета CRC
+    QByteArray DataTx(9,0); //Массив данных
+    quint16 crc;
+
+    DataTx[0] = SB;         //Стартовый байт
+    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
+    DataTx[2] = DataTxC[1] = 0x03;        //Длина данных
+    DataTx[3] = DataTxC[2] = GET_FH_PARAM;//Ctrl
+    DataTx[4] = DataTxC[3] = 0x01;
+    DataTx[5] = DataTxC[4] = 0x02;
+    DataTx[6] = DataTxC[5] = 0x03;
+    crc = Crc16(DataTxC, 6);      //расчет crc отправляемой посылки
+    DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
+    DataTx[8] = crc & 0x00FF;     //расчет crc отправляемой посылки (дладший байт)
+    writeData(DataTx);//Запись в порт
+    readyRead();      //Порт готов к чтению
+    GetBatter();
 }
 
 
+//Расчет заряда батареи гарнитуры-----------------------------------------------
+void MainWindow::GetBatter()
+{
+    QByteArray batter = PortNew->BatterGet();//Получаем значение batter
+
+    int    per_cent;   //Проценты
+    double per_cent_fl;//Проценты
+
+    unsigned short val_bat = 0xFFFF;             //Переменная для перевода байт в ushort
+    unsigned short bat_1 = batter.at(0);         //Нулевой элемент массива
+    unsigned short bat_2 = batter.at(1) & 0x00ff;//Первый элемент массива
+
+    val_bat = ((bat_1 << 8) | bat_2) & 0xffff;//Загоняем масив в байты
+    per_cent_fl = ((100*(val_bat - 0x0A8C))/(0x109A - 0x0A8C));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
+    per_cent = (int)(per_cent_fl + 0.5);      //Округляем до целых
+
+    ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
+}
 
