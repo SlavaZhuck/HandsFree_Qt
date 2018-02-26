@@ -69,7 +69,6 @@ void Port :: ConnectPort(void)
                     ReadInPort();
                     tx_get_fh_key();//Запрос ключа шифрования записанного на гарнитуре
                     ReadInPort();
-                    flagConnect = 1;
                 }
 
             }

@@ -57,8 +57,6 @@ public:
 
     Settings    SettingsPort;
 
-    int flagConnect = 0;
-
 signals:
     void finished_Port();
 

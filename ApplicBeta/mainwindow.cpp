@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->lineEdit->setMaxLength(32);
-    ui->progressBar->setValue(1);
+    ui->progressBar->setValue(0);
 
     //Показать доступнуе COM-порты------------------------------------------------------------
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
@@ -31,7 +31,6 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
-    connect(ui->comboBoxCom, SIGNAL(currentIndexChanged(int)), this, SLOT(showPortInfo(int)));
 
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->comboBoxBaudRate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400);
@@ -109,8 +108,8 @@ void MainWindow::on_pushButton_clicked()
 
     for (i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
         {
-            arr[i] = Random::get(10, 99 );   //формирование массива случайных чисел
-            DataTxK[j] = DataTxC[k] = arr[i];//формирование посылки
+            arr[i] = qrand()%(0 - 255 + 1)+ 0; //формирование массива случайных чисел
+            DataTxK[j] = DataTxC[k] = arr[i];  //формирование посылки
         }
 
     crc = Crc16(DataTxC, 19);//Расчет CRC
@@ -324,4 +323,3 @@ void MainWindow::GetBatter()
 
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
 }
-
