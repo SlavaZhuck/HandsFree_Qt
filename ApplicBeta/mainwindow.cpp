@@ -172,7 +172,7 @@ void MainWindow::on_pushButton_5_clicked()
                  ui->comboBoxFlowControl->currentText().toInt());
     QTimer *ptimer = new QTimer();
     connect(ptimer, SIGNAL(timeout()),this, SLOT(TimerStart()));
-    ptimer->start(60000);
+    ptimer->start(6000);
 }
 
 //Формирование посылки в QLine Edit-----------------------------------------------------------
