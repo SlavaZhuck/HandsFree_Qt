@@ -33,3 +33,8 @@ HEADERS += mainwindow.h \
            random.h
 
 FORMS   += mainwindow.ui
+
+OTHER_FILES += \
+    AppBet.rc
+
+RC_FILE = AppBet.rc
