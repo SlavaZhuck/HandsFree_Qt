@@ -81,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
     connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
+    connect(PortNew, SIGNAL(timerStartSignal()), this, SLOT(timerStartSlot()));//Запуск таймера
     thread_New->start();
 }
 
@@ -169,9 +170,6 @@ void MainWindow::on_pushButton_5_clicked()
                  ui->comboBoxParity->currentText().toInt(),
                  ui->comboBoxStopBits->currentText().toInt(),
                  ui->comboBoxFlowControl->currentText().toInt());
-    QTimer *ptimer = new QTimer();
-    connect(ptimer, SIGNAL(timeout()),this, SLOT(TimerStart()));
-    ptimer->start(6000);
 }
 
 //Формирование посылки в QLine Edit-----------------------------------------------------------
@@ -281,6 +279,16 @@ void MainWindow::MacAdr()
     GetBatter();
 }
 
+//Запуск таймера----------------------------------------------------------------
+void MainWindow::timerStartSlot()
+{
+    QTimer *ptimer = new QTimer();
+    ptimer->setInterval(10000);
+    connect(ptimer, SIGNAL(timeout()),this, SLOT(TimerStart()));
+    ptimer->start();
+}
+
+
 //Запрос таймером параметров----------------------------------------------------
 void MainWindow::TimerStart()
 {
@@ -317,7 +325,12 @@ void MainWindow::GetBatter()
     unsigned short bat_2 = batter.at(1) & 0x00ff;//Первый элемент массива
 
     val_bat = ((bat_1 << 8) | bat_2) & 0xffff;//Загоняем масив в байты
-    per_cent_fl = ((100*((2*val_bat) - 0x0A8C))/(0x109A - 0x0A8C));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
+    per_cent_fl = ((100*(val_bat - MIN_VAl_BAT))/(MAX_VAL_BAT - MIN_VAl_BAT));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
+    if(per_cent_fl <= 0)
+        per_cent = 0;
+    else if(per_cent_fl >= 100)
+        per_cent = 100;
+    else
     per_cent = (int)(per_cent_fl + 0.5);      //Округляем до целых
 
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar

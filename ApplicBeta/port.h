@@ -66,6 +66,8 @@ signals:
 
     void sendParam();
 
+    void timerStartSignal();
+
 public slots:
     void DisconnectPort();
 

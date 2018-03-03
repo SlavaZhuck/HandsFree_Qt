@@ -6,6 +6,9 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include "port.h"
 
+#define MAX_VAL_BAT  0x0772
+#define MIN_VAl_BAT  0x04D0
+
 namespace Ui {
 class MainWindow;
 }
@@ -18,7 +21,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    QTimer *ptimer;
+
 
 signals:
 
@@ -51,6 +54,8 @@ private slots:
 
     void MacAdr();
 
+    void timerStartSlot();
+
     void TimerStart();
 
     void GetBatter();
@@ -59,6 +64,7 @@ private:
     Ui::MainWindow *ui;
     QSerialPort *serial;
     Port *PortNew;
+    QTimer *ptimer;
 };
 
 #endif // MAINWINDOW_H
