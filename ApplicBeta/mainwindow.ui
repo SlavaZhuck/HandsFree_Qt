@@ -314,7 +314,7 @@ color:white
          <rect>
           <x>10</x>
           <y>10</y>
-          <width>191</width>
+          <width>201</width>
           <height>41</height>
          </rect>
         </property>
@@ -339,7 +339,7 @@ color:white
          <rect>
           <x>10</x>
           <y>70</y>
-          <width>191</width>
+          <width>201</width>
           <height>41</height>
          </rect>
         </property>
@@ -355,7 +355,7 @@ color:white
          <rect>
           <x>10</x>
           <y>130</y>
-          <width>191</width>
+          <width>201</width>
           <height>41</height>
          </rect>
         </property>

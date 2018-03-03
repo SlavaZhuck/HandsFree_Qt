@@ -304,7 +304,7 @@ void MainWindow::TimerStart()
     GetBatter();
 }
 
-
+unsigned short val_bat = 0xFFFF;
 //Расчет заряда батареи гарнитуры-----------------------------------------------
 void MainWindow::GetBatter()
 {
@@ -313,12 +313,12 @@ void MainWindow::GetBatter()
     int    per_cent;   //Проценты
     double per_cent_fl;//Проценты
 
-    unsigned short val_bat = 0xFFFF;             //Переменная для перевода байт в ushort
+                 //Переменная для перевода байт в ushort
     unsigned short bat_1 = batter.at(0);         //Нулевой элемент массива
     unsigned short bat_2 = batter.at(1) & 0x00ff;//Первый элемент массива
 
     val_bat = ((bat_1 << 8) | bat_2) & 0xffff;//Загоняем масив в байты
-    per_cent_fl = ((100*(val_bat - 0x0A8C))/(0x109A - 0x0A8C));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
+    per_cent_fl = ((100*((2*val_bat) - 0x0A8C))/(0x109A - 0x0A8C));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
     per_cent = (int)(per_cent_fl + 0.5);      //Округляем до целых
 
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
