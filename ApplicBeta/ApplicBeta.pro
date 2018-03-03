@@ -29,8 +29,7 @@ SOURCES += main.cpp \
            port.cpp
 
 HEADERS += mainwindow.h \
-           port.h \
-           random.h
+           port.h
 
 FORMS   += mainwindow.ui
 
