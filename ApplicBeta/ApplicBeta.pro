@@ -34,6 +34,6 @@ HEADERS += mainwindow.h \
 FORMS   += mainwindow.ui
 
 OTHER_FILES += \
-    AppBet.rc
+           AppBet.rc
 
-RC_FILE = AppBet.rc
+RC_FILE =  AppBet.rc

@@ -12,7 +12,7 @@ Port :: Port(QObject *parent) : QObject(parent)
 
 Port :: ~Port()
 {
-    qDebug("Всем спасибо и досвидания");//Виден в дебаге при отключении
+    qDebug("Всем спасибо и до свидания");//Виден в дебаге при отключении
     emit finished_Port();
 }
 

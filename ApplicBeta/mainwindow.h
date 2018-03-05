@@ -54,11 +54,11 @@ private slots:
 
     void MacAdr();
 
-    void timerStartStopSlot();
+    void timerStartSlot();
 
     void timerStopSlot();
 
-    void TimerStart();
+    void batteryParamRequest();
 
     void GetBatter();
 
