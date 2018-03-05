@@ -23,6 +23,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit->setMaxLength(32);
     ui->progressBar->setValue(0);
 
+    ptimer = new QTimer();//Создаем таймер
+    connect(ptimer, SIGNAL(timeout()),this, SLOT(TimerStart()));//Связываем таймер со слотом
+
     //Показать доступнуе COM-порты------------------------------------------------------------
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
@@ -81,7 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
     connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
-    connect(PortNew, SIGNAL(timerStartSignal()), this, SLOT(timerStartSlot()));//Запуск таймера
+    connect(PortNew, SIGNAL(timerStartSignal()), this, SLOT(timerStartStopSlot()));//Запуск таймера
+    connect(PortNew, SIGNAL(timerStop()), this, SLOT(timerStartStopSlot()));
     thread_New->start();
 }
 
@@ -271,21 +275,24 @@ void MainWindow::MacAdr()
     QByteArray param = PortNew->ParamsGet();//Получаем значение param
     QString para_str(param.toHex().toUpper());
     for(int i = 0; i < para_str.length(); i = i + 3)
-        para_str =para_str.insert(i, ':');  //вставляем ":" в нужные маста
+        para_str = para_str.insert(i, ':'); //вставляем ":" в нужные маста
     para_str = para_str.remove(0, 1);       //удаляем нулевой символ
     qDebug()<<param.toHex().toUpper();
 
-    ui->label->setText("МАС адрес гарнитуры: "+ para_str);
+    ui->label->setText("МАС адрес гарнитуры: " + para_str);
     GetBatter();
 }
 
-//Запуск таймера----------------------------------------------------------------
-void MainWindow::timerStartSlot()
+//Запуск и остановка таймера----------------------------------------------------------------
+void MainWindow::timerStartStopSlot()
 {
-    QTimer *ptimer = new QTimer();
-    ptimer->setInterval(10000);
-    connect(ptimer, SIGNAL(timeout()),this, SLOT(TimerStart()));
-    ptimer->start();
+    if (!ptimer->isActive())//Еслитаймер неактивен
+    {
+
+        ptimer->start(10000);//Запускаем таймер с интервалом 10 секунд
+    }
+    else//Если таймер активен
+        ptimer->stop();//Останавливаем его
 }
 
 

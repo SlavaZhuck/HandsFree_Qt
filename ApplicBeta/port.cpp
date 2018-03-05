@@ -102,7 +102,8 @@ void  Port::DisconnectPort()
 {
     if(thisPort.isOpen())
     {
-        thisPort.close();
+        timerStop();
+        thisPort.close();        
         error_(SettingsPort.name.toLocal8Bit() + " Порт закрыт!\r");
 
     }

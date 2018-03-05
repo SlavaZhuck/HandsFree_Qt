@@ -54,7 +54,7 @@ private slots:
 
     void MacAdr();
 
-    void timerStartSlot();
+    void timerStartStopSlot();
 
     void TimerStart();
 
@@ -64,7 +64,7 @@ private:
     Ui::MainWindow *ui;
     QSerialPort *serial;
     Port *PortNew;
-    QTimer *ptimer;
+    QTimer* ptimer;
 };
 
 #endif // MAINWINDOW_H

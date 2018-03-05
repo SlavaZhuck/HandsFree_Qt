@@ -68,6 +68,8 @@ signals:
 
     void timerStartSignal();
 
+    void timerStop();
+
 public slots:
     void DisconnectPort();
 
