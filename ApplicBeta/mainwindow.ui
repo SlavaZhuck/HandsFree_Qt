@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>HFTA</string>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color:rgb(34, 32, 34)</string>

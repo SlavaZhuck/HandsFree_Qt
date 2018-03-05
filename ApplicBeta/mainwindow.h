@@ -62,7 +62,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QSerialPort *serial;
     Port *PortNew;
     QTimer* ptimer;
 };
