@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
     connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
     connect(PortNew, SIGNAL(timerStartSignal()), this, SLOT(timerStartStopSlot()));//Запуск таймера
-    connect(PortNew, SIGNAL(timerStop()), this, SLOT(timerStartStopSlot()));
+    connect(PortNew, SIGNAL(timerStop()), this, SLOT(timerStopSlot()));
     thread_New->start();
 }
 
@@ -283,16 +283,18 @@ void MainWindow::MacAdr()
     GetBatter();
 }
 
-//Запуск и остановка таймера----------------------------------------------------------------
+//Запуск таймера----------------------------------------------------------------
 void MainWindow::timerStartStopSlot()
 {
     if (!ptimer->isActive())//Еслитаймер неактивен
-    {
-
         ptimer->start(10000);//Запускаем таймер с интервалом 10 секунд
-    }
-    else//Если таймер активен
-        ptimer->stop();//Останавливаем его
+}
+
+//Остановка таймера-------------------------------------------------------------
+void MainWindow::timerStopSlot()
+{
+    if (ptimer->isActive())//Если таймер активен
+        ptimer->stop();    //Останавливаем его
 }
 
 

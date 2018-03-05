@@ -56,6 +56,8 @@ private slots:
 
     void timerStartStopSlot();
 
+    void timerStopSlot();
+
     void TimerStart();
 
     void GetBatter();
