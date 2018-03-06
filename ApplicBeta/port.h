@@ -95,8 +95,6 @@ public slots:
 
     void tx_get_fh_key();
 
-    void rx_rec_ok();
-
 private slots:
 
     void handleError(QSerialPort::SerialPortError error);

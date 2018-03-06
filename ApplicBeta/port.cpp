@@ -206,25 +206,6 @@ void Port::tx_get_fh_key()
     WriteToPort(DataTx);               //Запись в порт
 }
 
-//Подтверждение безошибочного приема--------------------------------------------------------------
-void Port::rx_rec_ok()
-{
-    QByteArray DataTxC(3,0);//Массив для расчета CRC
-    QByteArray DataTx(6,0);//Массив данных
-    quint16 crc;
-
-    DataTx[0] = SB;//Стартовый байт
-    DataTx[1] = DataTxC[0] = (0xff & ((ADR_TX(ADR_PC)) | (ADR_REC(ADR_HF))));//Адрес
-    DataTx[2] = DataTxC[1] = 0x00;  //Длина данных
-    DataTx[3] = DataTxC[2] = REC_OK;//Ctrl
-    crc = Crc16(DataTxC, 3);        //расчет crc принятой посылки
-    DataTx[4] = (crc & 0xFF00)>>8;  //расчет crc принимаемой посылки (старший байт)
-    DataTx[5] = crc & 0x00FF;       //расчет crc принимаемой посылки (дладший байт)
-
-    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-    WriteToPort(DataTx);               //Запись в порт
-}
-
 QByteArray buf_param;//Массив МАС адреса
 QByteArray buf_batter;//Массив заряда батареи
 //Чтение в порт-------------------------------------------------------------------------------------
