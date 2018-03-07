@@ -255,7 +255,7 @@ uint8_t Port::ReadInPort()//Парсер
 
                 QByteArray compare_arr;
 
-                for(int i = 0, j = 4; j < 10; i++, j++)
+                for(int i = 5, j = 4; j < 10; i--, j++)
                 {
                     compare_arr[i] = data_rx[j];
                 }
@@ -268,7 +268,7 @@ uint8_t Port::ReadInPort()//Парсер
 
                     QString str(buf_param.toHex().toUpper());
                     for(int i = 0; i < str.length(); i = i + 3)
-                        str =str.insert(i, ':');  //вставляем ":" в нужные маста
+                        str =str.insert(i, ':');  //вставляем ':' в нужные маста
                     str = str.remove(0, 1);       //удаляем нулевой символ ':'
                     error_(("GET_PARAM"));        //вывод на консоль
                     error_(("MAC адрес: " + str));//вывод на консоль
