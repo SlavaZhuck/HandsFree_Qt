@@ -175,7 +175,7 @@ void MainWindow::on_lineEdit_returnPressed()
             input += '0';
     }
 
-    if(input[2] != " ")//если третий символ не пробел
+    if(input[2] != ' ')//если третий символ не пробел
     {
         for(int i = 0; i < input.length(); i = i + 3)
             input_spaces = input.insert(i, ' ');//вставляем пробелы в нужные маста
