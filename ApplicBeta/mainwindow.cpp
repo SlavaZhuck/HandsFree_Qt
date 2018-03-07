@@ -1,19 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QMessageBox>
-#include <QDesktopWidget>
-#include <QString>
-#include <QScreen>
-#include <QtSerialPort/QSerialPort>
-#include <QtSerialPort/QSerialPortInfo>
-#include <QIODevice>
-#include <QThread>
 #include <error.h>
 #include <unistd.h>
-#include <QMetaEnum>
-#include <QDebug>
-#include <QTextCodec>
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
-
+    //Скорость
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->comboBoxBaudRate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400);
     ui->comboBoxBaudRate->addItem(QLatin1String("19200"),  QSerialPort::Baud19200);
@@ -78,9 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this,SIGNAL(savesettings(QString,int,int,int,int,int)),PortNew,SLOT(Write_Settings_Port(QString,int,int,int,int,int)));//Слот - ввод настроек
     connect(ui->pushButton_5, SIGNAL(clicked()),PortNew,SLOT(ConnectPort()));//Подключение порта
     connect(ui->pushButton_6, SIGNAL(clicked()),PortNew,SLOT(DisconnectPort()));//Отключение порта
-    connect(PortNew, SIGNAL(outPort(QString)), this, SLOT(Print(QString)));//Лог ошибок
     connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));//Запись в порт по готовности
-    connect(PortNew, SIGNAL(ReadInPort()),this,SLOT(Print(QByteArray)));//Отображение принятой обработанной посылки
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
     connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
@@ -149,9 +135,6 @@ void MainWindow::on_pushButton_3_clicked()
     writeData(DataTx);       //Запись в порт
     readyRead();
     qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
-
-    //ui->lineEdit->setText(QString(DataTx.toHex().constData()));
-    //ui->lineEdit->setText(QString(DataTx.constData()));//toHex().
 }
 
 //Обновление параметров----------------------------------------------------------------------
@@ -224,7 +207,6 @@ void MainWindow::on_lineEdit_returnPressed()
     Print("\rЗагрузка ключа в гарнитуру"); // Вывод данных в консоль
     writeData(DataTxK);//Запись в порт
     readyRead();//Порт готов к чтению
-
 }
 
 //Выбор скорости------------------------------------------------------------------------------
@@ -341,7 +323,7 @@ void MainWindow::GetBatter()
     else if(per_cent_fl >= 100)
         per_cent = 100;
     else
-        per_cent = (int)(per_cent_fl + 0.5);      //Округляем до целых
+        per_cent = (int)(per_cent_fl + 0.5);  //Округляем до целых
 
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
 }

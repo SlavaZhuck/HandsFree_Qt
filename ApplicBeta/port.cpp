@@ -1,8 +1,5 @@
 #include "port.h"
 #include <qdebug.h>
-#include <QString>
-#include <QTextCodec>
-#include <QThread>
 
 
 Port :: Port(QObject *parent) : QObject(parent)
@@ -208,7 +205,7 @@ void Port::tx_get_fh_key()
 
 QByteArray buf_param;//Массив МАС адреса
 QByteArray buf_batter;//Массив заряда батареи
-//Чтение в порт-------------------------------------------------------------------------------------
+//Чтение с порта-------------------------------------------------------------------------------------
 uint8_t Port::ReadInPort()//Парсер
 {
     QByteArray data_rx;                      //Массив принятых данных
@@ -264,15 +261,15 @@ uint8_t Port::ReadInPort()//Парсер
                 }
                 if(compare_arr != buf_param)
                 {
-                    for(int i = 0, j = 4; j < 10; i++, j++)
+                    for(int i = 5, j = 4; j < 10; i--, j++)
                     {
                         buf_param[i] = data_rx[j];
                     }
 
                     QString str(buf_param.toHex().toUpper());
                     for(int i = 0; i < str.length(); i = i + 3)
-                        str =str.insert(i, ":");  //вставляем ":" в нужные маста
-                    str = str.remove(0, 1);       //удаляем нулевой пробел
+                        str =str.insert(i, ':');  //вставляем ":" в нужные маста
+                    str = str.remove(0, 1);       //удаляем нулевой символ ':'
                     error_(("GET_PARAM"));        //вывод на консоль
                     error_(("MAC адрес: " + str));//вывод на консоль
                     qDebug()<<"GET_PARAM";

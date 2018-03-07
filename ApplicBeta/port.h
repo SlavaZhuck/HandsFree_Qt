@@ -2,7 +2,9 @@
 #define PORT_H
 
 #include <QObject>
-#include <QTimer>
+#include <QString>
+#include <QThread>
+#include <QTextCodec>
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 
@@ -26,8 +28,8 @@
 #define GET_FH_KEY     0x24 // запрос ключа шифрования
 #define GET_FH_CR_TP   0x25 // запрос типа шифрования
 
-#define ADR_PC         0x1
-#define ADR_HF         0x3
+#define ADR_PC         0x1  // полубайт адреса компьютера
+#define ADR_HF         0x3  // полубайт адреса гарнитуры
 #define ADR_TX(x)      x<<4
 #define ADR_REC(x)     x
 
@@ -61,8 +63,6 @@ signals:
     void finished_Port();
 
     void error_(QString err);
-
-    void outPort(QString data);
 
     void sendParam();
 

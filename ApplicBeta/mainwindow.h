@@ -4,6 +4,16 @@
 #include <QMainWindow>
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
+#include <QIODevice>
+#include <QThread>
+#include <QMetaEnum>
+#include <QDebug>
+#include <QTextCodec>
+#include <QDesktopWidget>
+#include <QString>
+#include <QScreen>
+#include <QTimer>
+
 #include "port.h"
 
 #define MAX_VAL_BAT  0x0772
