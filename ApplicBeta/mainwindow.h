@@ -72,6 +72,10 @@ private slots:
 
     void GetBatter();
 
+    void uiOnSlot();
+
+    void uiOffSlot();
+
 private:
     Ui::MainWindow *ui;
     Port *PortNew;

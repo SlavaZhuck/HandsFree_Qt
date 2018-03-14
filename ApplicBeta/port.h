@@ -70,6 +70,10 @@ signals:
 
     void timerStop();
 
+    void uiOnSignal();
+
+    void uiOffSignal();
+
 public slots:
     void DisconnectPort();
 

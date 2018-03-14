@@ -10,6 +10,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->lineEdit->setMaxLength(32);
     ui->progressBar->setValue(0);
+    ui->pushButton_6->setEnabled(false);
+
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_2->setEnabled(false);
+    ui->pushButton_3->setEnabled(false);
+
 
     ptimer = new QTimer();//Создаем таймер
     connect(ptimer, SIGNAL(timeout()),this, SLOT(batteryParamRequest()));//Связываем таймер со слотом
@@ -66,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this,SIGNAL(savesettings(QString,int,int,int,int,int)),PortNew,SLOT(Write_Settings_Port(QString,int,int,int,int,int)));//Слот - ввод настроек
     connect(ui->pushButton_5, SIGNAL(clicked()),PortNew,SLOT(ConnectPort()));//Подключение порта
     connect(ui->pushButton_6, SIGNAL(clicked()),PortNew,SLOT(DisconnectPort()));//Отключение порта
+    connect(PortNew, SIGNAL(uiOnSignal()), this, SLOT(uiOnSlot()));//Изменения в форме при подключении порта
+    connect(PortNew, SIGNAL(uiOffSignal()), this, SLOT(uiOffSlot()));//Изменения в форме при отключении порта
     connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));//Запись в порт по готовности
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
@@ -157,6 +165,23 @@ void MainWindow::on_pushButton_5_clicked()
                  ui->comboBoxParity->currentText().toInt(),
                  ui->comboBoxStopBits->currentText().toInt(),
                  ui->comboBoxFlowControl->currentText().toInt());
+
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_2->setEnabled(false);
+    ui->pushButton_3->setEnabled(false);
+
+    ui->pushButton_4->setEnabled(false);
+    ui->pushButton_4->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
+
+    ui->pushButton_5->setEnabled(false);
+    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
+
+    ui->comboBoxCom->setEnabled(false);
+    ui->comboBoxBaudRate->setEnabled(false);
+    ui->comboBoxDataBits->setEnabled(false);
+    ui->comboBoxParity->setEnabled(false);
+    ui->comboBoxFlowControl->setEnabled(false);
+    ui->comboBoxStopBits->setEnabled(false);
 }
 
 //Формирование посылки в QLine Edit-----------------------------------------------------------
@@ -269,14 +294,18 @@ void MainWindow::MacAdr()
 void MainWindow::timerStartSlot()
 {
     if (!ptimer->isActive())//Еслитаймер неактивен
+    {
         ptimer->start(10000);//Запускаем таймер с интервалом 10 секунд
+    }
 }
 
 //Остановка таймера-------------------------------------------------------------
 void MainWindow::timerStopSlot()
 {
     if (ptimer->isActive())//Если таймер активен
+    {
         ptimer->stop();    //Останавливаем его
+    }
 }
 
 
@@ -326,4 +355,50 @@ void MainWindow::GetBatter()
         per_cent = (int)(per_cent_fl + 0.5);  //Округляем до целых
 
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
+}
+
+//Изменения в форме при подключении порта----------------------------------------------------
+void MainWindow::uiOnSlot()
+{
+    ui->pushButton_6->setEnabled(true);
+    ui->pushButton_6->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+
+    ui->pushButton->setEnabled(true);
+    ui->pushButton_2->setEnabled(true);
+    ui->pushButton_3->setEnabled(true);
+
+    ui->comboBoxCom->setEnabled(false);
+    ui->comboBoxBaudRate->setEnabled(false);
+    ui->comboBoxDataBits->setEnabled(false);
+    ui->comboBoxParity->setEnabled(false);
+    ui->comboBoxFlowControl->setEnabled(false);
+    ui->comboBoxStopBits->setEnabled(false);
+}
+
+//Изменения в форме при отключении порта-----------------------------------------------------
+void MainWindow::uiOffSlot()
+{
+    ui->pushButton_6->setEnabled(false);
+    ui->pushButton_6->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
+
+    ui->pushButton_4->setEnabled(true);
+    ui->pushButton_4->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+
+    ui->pushButton_5->setEnabled(true);
+    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_2->setEnabled(false);
+    ui->pushButton_3->setEnabled(false);
+
+    ui->plainTextEdit->clear();
+
+    ui->progressBar->setValue(0);
+
+    ui->comboBoxCom->setEnabled(true);
+    ui->comboBoxBaudRate->setEnabled(true);
+    ui->comboBoxDataBits->setEnabled(true);
+    ui->comboBoxParity->setEnabled(true);
+    ui->comboBoxFlowControl->setEnabled(true);
+    ui->comboBoxStopBits->setEnabled(true);
 }

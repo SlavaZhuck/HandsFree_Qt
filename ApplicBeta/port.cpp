@@ -67,6 +67,7 @@ void Port :: ConnectPort(void)
                     tx_get_fh_key();//Запрос ключа шифрования записанного на гарнитуре
                     ReadInPort();
                     timerStartSignal();
+                    uiOnSignal();
                 }
 
             }
@@ -97,13 +98,14 @@ void Port::handleError(QSerialPort::SerialPortError error)
 //Отключение порта-------------------------------------------------------------------------------
 void  Port::DisconnectPort()
 {
+
     if(thisPort.isOpen())
     {
         timerStop();
         thisPort.close();        
         error_(SettingsPort.name.toLocal8Bit() + " Порт закрыт!\r");
-
     }
+    uiOffSignal();
 }
 
 //Запись данных в порт-----------------------------------------------------------------------------
@@ -229,9 +231,9 @@ uint8_t Port::ReadInPort()//Парсер
     }
 
     v_crc   = Crc16(buf_rx, data_rx[2] + 3); //расчет crc пришедшей посылки
-    lb_crc  = v_crc >> 8;                    //расчет crc пришедшей посылки (старший байт)
-    hb_crc  = v_crc;                         //расчет crc пришедшей посылки (младший байт)
-    len_dat = data_rx[2] + 3;                //расчет длинны данных пришедшей посылки (старший байт)
+    lb_crc  = v_crc >> 8;                    //расчет crc пришедшей посылки (младший байт)
+    hb_crc  = v_crc;                         //расчет crc пришедшей посылки (старший байт)
+    len_dat = data_rx[2] + 3;                //расчет длинны данных пришедшей посылки
     lb      = data_rx[len_dat + 2];          //crc пришедшей посылки (младший байт)
     hb      = data_rx[len_dat + 1];          //crc пришедшей посылки (старший байт)
     dat_adr = data_rx[1];                                      //адрес пришедшей посылки
