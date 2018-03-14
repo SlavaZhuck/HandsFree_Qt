@@ -171,10 +171,10 @@ void MainWindow::on_pushButton_5_clicked()
     ui->pushButton_3->setEnabled(false);
 
     ui->pushButton_4->setEnabled(false);
-    ui->pushButton_4->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
+    ui->pushButton_4->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
 
     ui->pushButton_5->setEnabled(false);
-    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
+    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
 
     ui->comboBoxCom->setEnabled(false);
     ui->comboBoxBaudRate->setEnabled(false);
@@ -361,7 +361,7 @@ void MainWindow::GetBatter()
 void MainWindow::uiOnSlot()
 {
     ui->pushButton_6->setEnabled(true);
-    ui->pushButton_6->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+    ui->pushButton_6->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
 
     ui->pushButton->setEnabled(true);
     ui->pushButton_2->setEnabled(true);
@@ -379,13 +379,13 @@ void MainWindow::uiOnSlot()
 void MainWindow::uiOffSlot()
 {
     ui->pushButton_6->setEnabled(false);
-    ui->pushButton_6->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
+    ui->pushButton_6->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
 
     ui->pushButton_4->setEnabled(true);
-    ui->pushButton_4->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+    ui->pushButton_4->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
 
     ui->pushButton_5->setEnabled(true);
-    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
 
     ui->pushButton->setEnabled(false);
     ui->pushButton_2->setEnabled(false);
