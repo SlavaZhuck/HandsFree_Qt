@@ -76,6 +76,8 @@ private slots:
 
     void uiOffSlot();
 
+    void chekComName();
+
 private:
     Ui::MainWindow *ui;
     Port *PortNew;

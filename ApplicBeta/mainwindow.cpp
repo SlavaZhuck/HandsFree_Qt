@@ -16,9 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_2->setEnabled(false);
     ui->pushButton_3->setEnabled(false);
 
-
-    ptimer = new QTimer();//Создаем таймер
+    //Создаем таймер--------------------------------------------------------------------------
+    ptimer = new QTimer();
     connect(ptimer, SIGNAL(timeout()),this, SLOT(batteryParamRequest()));//Связываем таймер со слотом
+
 
     //Показать доступнуе COM-порты------------------------------------------------------------
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
@@ -26,8 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->comboBoxCom->addItem(info.portName());
     }
 
+    chekComName();
+
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
-    //Скорость
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->comboBoxBaudRate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400);
     ui->comboBoxBaudRate->addItem(QLatin1String("19200"),  QSerialPort::Baud19200);
@@ -62,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //Формирование потока
     QThread *thread_New = new QThread;//Создаем поток для порта гарнитуры
     Port *PortNew = new Port();//Создаем обьект по классу
-    PortNew->moveToThread(thread_New);//Помещаем класс  в поток    
+    PortNew->moveToThread(thread_New);//Помещаем класс в поток
     PortNew->thisPort.moveToThread(thread_New);//Помещаем сам порт в поток
     connect(PortNew, SIGNAL(error_(QString)), this, SLOT(Print(QString)));//Лог ошибок
     connect(thread_New, SIGNAL(started()), PortNew, SLOT(process_Port()));//Переназначения метода run
@@ -79,8 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
     connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
     connect(PortNew, SIGNAL(timerStartSignal()), this, SLOT(timerStartSlot()));//Запуск таймера
-    connect(PortNew, SIGNAL(timerStop()), this, SLOT(timerStopSlot()));
-    thread_New->start();
+    connect(PortNew, SIGNAL(timerStop()), this, SLOT(timerStopSlot()));//Остановка таймера
+    thread_New->start();//Запускаем поток
 }
 
 MainWindow::~MainWindow()
@@ -154,6 +156,7 @@ void MainWindow::on_pushButton_4_clicked()
     {
         ui->comboBoxCom->addItem(info.portName());
     }
+    chekComName();
 }
 
 //Сохранение параметров порта----------------------------------------------------------------
@@ -207,7 +210,7 @@ void MainWindow::on_lineEdit_returnPressed()
         input = input_spaces.remove(0, 1);//удаляем нулевой пробел
     }
 
-    QStringList list1 = input.split(" ");//Для разделения на байты по пробелу
+    QStringList list1 = input.split(' ');//Для разделения на байты по пробелу
     int size = list1.size();
     for (int i = 0 ; i < size; i++)// Разделение по пробелу
     {
@@ -243,6 +246,19 @@ void MainWindow::checkCustomBaudRatePolicy(int idx)
     {
         ui->comboBoxBaudRate->clearEditText();
     }
+}
+
+//Проверяем есть ли подключенные устройства-----------------------------------------------------
+void MainWindow::chekComName()
+{
+    int k = ui->comboBoxCom->currentIndex();//Проверяем индекс заполнения comboBox
+
+    if(k == -1)//Еслинет подключенных устройств
+    {
+        ui->pushButton_5->setEnabled(false);//Кнопка подключения не работает
+    }
+    else//Если таковые имеются
+        ui->pushButton_5->setEnabled(true);//Кнопка подключения работает
 }
 
 //Функция вывода на консоль-----------------------------------------------------------------
