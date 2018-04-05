@@ -12,9 +12,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progressBar->setValue(0);
     ui->pushButton_6->setEnabled(false);
 
-    ui->pushButton->setEnabled(false);
+    ui->pushButton->setEnabled(true);
     ui->pushButton_2->setEnabled(false);
     ui->pushButton_3->setEnabled(false);
+    ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
 
     //Создаем таймер--------------------------------------------------------------------------
     ptimer = new QTimer();
@@ -76,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_6, SIGNAL(clicked()),PortNew,SLOT(DisconnectPort()));//Отключение порта
     connect(PortNew, SIGNAL(uiOnSignal()), this, SLOT(uiOnSlot()));//Изменения в форме при подключении порта
     connect(PortNew, SIGNAL(uiOffSignal()), this, SLOT(uiOffSlot()));//Изменения в форме при отключении порта
+    connect(PortNew, SIGNAL(uiOffSignal()), this, SLOT(fillPorts()));//Обновление информации о подключенных портах----------------------------------------
     connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));//Запись в порт по готовности
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
     connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
@@ -106,9 +108,11 @@ void MainWindow::on_pushButton_clicked()
     DataTxK[2] = DataTxC[1] = 0x10;       //Длина посылки
     DataTxK[3] = DataTxC[2] = SEND_FH_KEY;//Ctrl
 
+    qsrand(time(0));//Системное время для генерации случайных чисел
+
     for (i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
         {
-            arr[i] = qrand()%(0 - 255 + 1)+ 0; //формирование массива случайных чисел
+            arr[i] = (qrand()%((255 + 1) - 1) + 1); //формирование массива случайных чисел
             DataTxK[j] = DataTxC[k] = arr[i];  //формирование посылки
         }
 
@@ -253,12 +257,14 @@ void MainWindow::chekComName()
 {
     int k = ui->comboBoxCom->currentIndex();//Проверяем индекс заполнения comboBox
 
-    if(k == -1)//Еслинет подключенных устройств
+    if(k == -1)//Если нет подключенных устройств
     {
-        ui->pushButton_5->setEnabled(false);//Кнопка подключения не работает
+        ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+        ui->pushButton_5->setEnabled(false);//Кнопка подключения не работает        
     }
     else//Если таковые имеются
         ui->pushButton_5->setEnabled(true);//Кнопка подключения работает
+        ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(49, 47, 49);"));
 }
 
 //Функция вывода на консоль-----------------------------------------------------------------
@@ -417,4 +423,15 @@ void MainWindow::uiOffSlot()
     ui->comboBoxParity->setEnabled(true);
     ui->comboBoxFlowControl->setEnabled(true);
     ui->comboBoxStopBits->setEnabled(true);
+}
+
+//Показать доступнуе COM-порты------------------------------------------------------------
+void MainWindow::fillPorts()
+{
+    ui->comboBoxCom->clear();
+
+    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
+    {
+        ui->comboBoxCom->addItem(info.portName());
+    }
 }

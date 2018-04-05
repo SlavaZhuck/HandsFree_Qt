@@ -13,6 +13,8 @@
 #include <QString>
 #include <QScreen>
 #include <QTimer>
+#include <stdlib.h>
+#include <time.h>
 
 #include "port.h"
 
@@ -77,6 +79,8 @@ private slots:
     void uiOffSlot();
 
     void chekComName();
+
+    void fillPorts();
 
 private:
     Ui::MainWindow *ui;

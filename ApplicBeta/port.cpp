@@ -82,6 +82,7 @@ void Port :: ConnectPort(void)
     {
         thisPort.close();
         error_(thisPort.errorString().toLocal8Bit());
+        uiOffSignal();
     }    
 }
 
