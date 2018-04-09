@@ -76,6 +76,7 @@ void Port :: ConnectPort(void)
         {
             thisPort.close();
             error_(thisPort.errorString().toLocal8Bit());
+            uiOffSignal();
         }
     }
     else
@@ -109,7 +110,7 @@ void  Port::DisconnectPort()
     uiOffSignal();
 }
 
-//Запись данных в порт-----------------------------------------------------------------------------
+//Запись данных в порт----------------------------------------------------------------------------
 void Port :: WriteToPort(QByteArray data)
 {
     if(thisPort.isOpen())
@@ -256,15 +257,25 @@ uint8_t Port::ReadInPort()//Парсер
                     buf_batter[i] = data_rx[j];
                 }
 
-                QByteArray compare_arr;
+                QByteArray compare_arr;//Временный массив для вновь пришедшего MAC-адреса в ответ на GET_STATUS
 
                 for(int i = 5, j = 4; j < 10; i--, j++)
                 {
-                    compare_arr[i] = data_rx[j];
+                    compare_arr[i] = data_rx[j];//Запись нового МАС-адреса во временный массив
                 }
-                if(compare_arr != buf_param)
+                if(compare_arr != buf_param)//Если новый МАС-адрес не равен предыдущему
                 {
-                    for(int i = 5, j = 4; j < 10; i--, j++)
+                    if(buf_param != 0)
+                    {
+                        newParams();
+                        QString old_str(buf_param.toHex().toUpper());
+                        for(int i = 0; i < old_str.length(); i = i + 3)
+                            old_str = old_str.insert(i, ':');  //вставляем ':' в нужные маста
+                        old_str = old_str.remove(0, 1);       //удаляем нулевой символ ':'
+                        error_(("Устройство ID: " + old_str + " отключено" ));
+                    }
+
+                    for(int i = 5, j = 4; j < 10; i--, j++)//- перезаписываем МАС
                     {
                         buf_param[i] = data_rx[j];
                     }
@@ -273,7 +284,7 @@ uint8_t Port::ReadInPort()//Парсер
                     for(int i = 0; i < str.length(); i = i + 3)
                         str =str.insert(i, ':');  //вставляем ':' в нужные маста
                     str = str.remove(0, 1);       //удаляем нулевой символ ':'
-                    error_(("GET_PARAM"));        //вывод на консоль
+                    error_(("Подключено новое устройство"));        //вывод на консоль
                     error_(("MAC адрес: " + str));//вывод на консоль
                     qDebug()<<"GET_PARAM";
                     qDebug()<<("MAC адрес: " + str);

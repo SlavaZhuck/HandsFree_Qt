@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxFlowControl->addItem(QLatin1String("XON/XOFF"), QSerialPort::SoftwareControl);
 
     //Отправить посылку записанную в QLineEdit (текстовое поле)
-    connect(ui->pushButton_2,SIGNAL(clicked()),this, SLOT(on_lineEdit_returnPressed()));
+    connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(on_lineEdit_returnPressed()));
 
     //Формирование потока
     QThread *thread_New = new QThread;//Создаем поток для порта гарнитуры
@@ -72,18 +72,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(PortNew, SIGNAL(finished_Port()), thread_New, SLOT(quit()));//Переназначение метод выхода
     connect(thread_New, SIGNAL(finished()), PortNew, SLOT(deleteLater()));//Удалить поток нафиг
     connect(PortNew, SIGNAL(finished_Port()), thread_New, SLOT(deleteLater()));//Удалить поток нафиг
-    connect(this,SIGNAL(savesettings(QString,int,int,int,int,int)),PortNew,SLOT(Write_Settings_Port(QString,int,int,int,int,int)));//Слот - ввод настроек
-    connect(ui->pushButton_5, SIGNAL(clicked()),PortNew,SLOT(ConnectPort()));//Подключение порта
-    connect(ui->pushButton_6, SIGNAL(clicked()),PortNew,SLOT(DisconnectPort()));//Отключение порта
+    connect(this, SIGNAL(savesettings(QString,int,int,int,int,int)), PortNew, SLOT(Write_Settings_Port(QString,int,int,int,int,int)));//Слот - ввод настроек
+    connect(ui->pushButton_5, SIGNAL(clicked()), PortNew, SLOT(ConnectPort()));//Подключение порта
+    connect(ui->pushButton_6, SIGNAL(clicked()), PortNew, SLOT(DisconnectPort()));//Отключение порта
     connect(PortNew, SIGNAL(uiOnSignal()), this, SLOT(uiOnSlot()));//Изменения в форме при подключении порта
     connect(PortNew, SIGNAL(uiOffSignal()), this, SLOT(uiOffSlot()));//Изменения в форме при отключении порта
     connect(PortNew, SIGNAL(uiOffSignal()), this, SLOT(fillPorts()));//Обновление информации о подключенных портах----------------------------------------
-    connect(this,SIGNAL(writeData(QByteArray)),PortNew,SLOT(WriteToPort(QByteArray)));//Запись в порт по готовности
+    connect(this, SIGNAL(writeData(QByteArray)), PortNew, SLOT(WriteToPort(QByteArray)));//Запись в порт по готовности
     connect(this, SIGNAL(readyRead()), PortNew, SLOT(ReadInPort()));//подключаем   чтение с порта по сигналу readyRead()
-    connect(this, SIGNAL(error(QSerialPort::SerialPortError)),PortNew,SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
-    connect(PortNew, SIGNAL(sendParam()),this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
+    connect(this, SIGNAL(error(QSerialPort::SerialPortError)), PortNew, SLOT(handleError(QSerialPort::SerialPortError)));//Сообщение об ошибке
+    connect(PortNew, SIGNAL(sendParam()), this, SLOT(MacAdr()));//Отображение МАС адреса гарнитуры
     connect(PortNew, SIGNAL(timerStartSignal()), this, SLOT(timerStartSlot()));//Запуск таймера
     connect(PortNew, SIGNAL(timerStop()), this, SLOT(timerStopSlot()));//Остановка таймера
+    connect(PortNew, SIGNAL(newParams()), this, SLOT(setNewMac()));//Отключение старой гарнитуры и подключение новой
     thread_New->start();//Запускаем поток
 }
 
@@ -413,9 +414,9 @@ void MainWindow::uiOffSlot()
     ui->pushButton_2->setEnabled(false);
     ui->pushButton_3->setEnabled(false);
 
-    ui->plainTextEdit->clear();
+    ui->plainTextEdit->clear();//Очистка QPlainTextEdit
 
-    ui->progressBar->setValue(0);
+    ui->progressBar->setValue(0);//Обнуление уровня заряда батареи
 
     ui->comboBoxCom->setEnabled(true);
     ui->comboBoxBaudRate->setEnabled(true);
@@ -434,4 +435,12 @@ void MainWindow::fillPorts()
     {
         ui->comboBoxCom->addItem(info.portName());
     }
+}
+
+//Отключение старой и подключение новой гарнитуры------------------------------------------
+void MainWindow::setNewMac()
+{
+    ui->plainTextEdit->clear();
+
+    ui->progressBar->setValue(0);
 }

@@ -82,6 +82,8 @@ private slots:
 
     void fillPorts();
 
+    void setNewMac();
+
 private:
     Ui::MainWindow *ui;
     Port *PortNew;

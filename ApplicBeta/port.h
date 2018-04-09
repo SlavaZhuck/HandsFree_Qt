@@ -74,6 +74,8 @@ signals:
 
     void uiOffSignal();
 
+    void newParams();
+
 public slots:
     void DisconnectPort();
 
