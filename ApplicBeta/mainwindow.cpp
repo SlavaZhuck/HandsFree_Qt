@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <error.h>
 #include <unistd.h>
+#include <QFontDatabase>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -109,6 +110,7 @@ void MainWindow::on_pushButton_clicked()
     DataTxK[2] = DataTxC[1] = 0x10;       //Длина посылки
     DataTxK[3] = DataTxC[2] = SEND_FH_KEY;//Ctrl
 
+    //QUuid id = QUuid::createUuid();
     qsrand(time(0));//Системное время для генерации случайных чисел
 
     for (i = 0, j = 4, k = 3; i < 16; i++, j++, k++)
@@ -318,7 +320,7 @@ void MainWindow::timerStartSlot()
 {
     if (!ptimer->isActive())//Еслитаймер неактивен
     {
-        ptimer->start(10000);//Запускаем таймер с интервалом 10 секунд
+        ptimer->start(2000);//Запускаем таймер с интервалом 10 секунд
     }
 }
 
@@ -368,16 +370,99 @@ void MainWindow::GetBatter()
     unsigned short bat_2 = batter.at(1) & 0x00ff;//Первый элемент массива
 
     val_bat = ((bat_1 << 8) | bat_2) & 0xffff;//Загоняем масив в байты
-    per_cent_fl = ((100*(val_bat - MIN_VAl_BAT))/(MAX_VAL_BAT - MIN_VAl_BAT));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
 
-    if(per_cent_fl <= 0)
-        per_cent = 0;
-    else if(per_cent_fl >= 100)
-        per_cent = 100;
+
+    //Моя формула***************************************
+    val_bat *=2;
+    if(val_bat > 3950)
+    {
+        per_cent_fl = 100;
+    }
+    else if(val_bat >= 3600 )
+    {
+        per_cent_fl = (((val_bat - 3600)/3.5) * 0.95 + 5);
+    }
+    else if(val_bat >= 3000)
+    {
+        per_cent_fl = (((val_bat - 3000)/6) * 0.04 + 1);
+    }
     else
-        per_cent = (int)(per_cent_fl + 0.5);  //Округляем до целых
+    {
+        per_cent_fl = 1;
+    }
+
+    per_cent = (int)(per_cent_fl);  //Округляем до целых
+
+
+//Вовина формула*********************************************
+//    if(val_bat > 0x06A4)
+//    {
+//        per_cent = ((val_bat/(0x07B7 - 0x064A)) * 0.95 + 5);
+//        ui->progressBar->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 255, 0);"));
+//    }
+//    else if(val_bat <= 0x06A4 && val_bat > 0x05AA)
+//    {
+//        per_cent = ((val_bat/(0x06A4 - 0x05AA)) * 0.04 + 1);
+//        ui->progressBar->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 255, 0);"));
+//    }
+//    else if(val_bat <= 0x05AA && val_bat > 0x0578)
+//    {
+//        per_cent = 1;
+//        ui->progressBar->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 0, 0);"));
+//    }
+//    else if(val_bat < 0x0578)
+//    {
+//        per_cent = 0;
+//    }
+
+//Формула Славы******************************************************
+//    val_bat *=2;
+//    double per_cent_fl;//Проценты (без округления до целых)
+//    per_cent_fl =(((val_bat*2 - 3600))/(3.5));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
+//    if(per_cent_fl <= 0)
+//        per_cent = 0;
+//    else if(per_cent_fl >= 100)
+//        per_cent = 100;
+//    else
+//        per_cent = (int)(per_cent_fl);  //Округляем до целых
+
+//Старая формула расчета заряда батареи******************************
+//    double per_cent_fl;//Проценты (без округления до целых)
+//    per_cent_fl = ((100*(val_bat - MIN_VAl_BAT))/(MAX_VAL_BAT - MIN_VAl_BAT));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
+//    if(per_cent_fl <= 0)
+//        per_cent = 0;
+//    else if(per_cent_fl >= 100)
+//        per_cent = 100;
+//    else
+//        per_cent = (int)(per_cent_fl + 0.5);  //Округляем до целых
+
+/******************************************/
+//Для проверки заряда батареи
+    unsigned short t = (unsigned short)val_bat;
+    QString stri;
+    stri.setNum(t);
+
+    QTime times = QTime::currentTime();
+    QString str = times.toString(Qt::LocalDate);
+
+    qDebug()<<per_cent;
+    qDebug()<<stri<<"-"<<str;
+/******************************************/
 
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
+
+//    QString st = QString (
+//                "QProgressBar::chunk {"
+//                "background-color: #ff0000;"
+//                 "}");
+
+//    st.append("QProgressBar {"
+//              "border: 1px solid grey;"
+//              "border-radius: 2px;"
+//              "text-align: center;"
+//              "background: #eeeeee;"
+//              "}");
+//    ui->progressBar->setStyleSheet(st);
 }
 
 //Изменения в форме при подключении порта----------------------------------------------------
@@ -424,6 +509,7 @@ void MainWindow::uiOffSlot()
     ui->comboBoxParity->setEnabled(true);
     ui->comboBoxFlowControl->setEnabled(true);
     ui->comboBoxStopBits->setEnabled(true);
+    ui->label->setText("МАС адрес гарнитуры: ");
 }
 
 //Показать доступнуе COM-порты------------------------------------------------------------

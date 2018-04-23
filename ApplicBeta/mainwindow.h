@@ -13,13 +13,16 @@
 #include <QString>
 #include <QScreen>
 #include <QTimer>
+#include <QDateTime>
+#include <QUuid>
+
 #include <stdlib.h>
 #include <time.h>
 
 #include "port.h"
 
-#define MAX_VAL_BAT  0x0772
-#define MIN_VAl_BAT  0x04D0
+//#define MAX_VAL_BAT  0x0772
+//#define MIN_VAl_BAT  0x04D0
 
 namespace Ui {
 class MainWindow;

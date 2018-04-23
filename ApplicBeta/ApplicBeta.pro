@@ -37,3 +37,9 @@ OTHER_FILES += \
            AppBet.rc
 
 RC_FILE =  AppBet.rc
+
+RC_ICONS = AppBet.ico
+
+RESOURCES += \
+    res.qrc
+
