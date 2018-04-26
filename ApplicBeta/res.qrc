@@ -2,4 +2,7 @@
     <qresource prefix="/fonts">
         <file>ARIAL.TTF</file>
     </qresource>
+    <qresource prefix="/">
+        <file>AppBet.ico</file>
+    </qresource>
 </RCC>
