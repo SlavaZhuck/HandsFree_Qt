@@ -82,8 +82,8 @@ color:white
          <rect>
           <x>10</x>
           <y>40</y>
-          <width>93</width>
-          <height>14</height>
+          <width>101</width>
+          <height>16</height>
          </rect>
         </property>
         <property name="font">
@@ -444,7 +444,7 @@ font: 12pt &quot;Arial&quot;;</string>
          <rect>
           <x>10</x>
           <y>70</y>
-          <width>182</width>
+          <width>381</width>
           <height>18</height>
          </rect>
         </property>

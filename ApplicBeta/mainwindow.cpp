@@ -438,31 +438,22 @@ void MainWindow::GetBatter()
 
 /******************************************/
 //Для проверки заряда батареи
-    unsigned short t = (unsigned short)val_bat;
-    QString stri;
-    stri.setNum(t);
+//    unsigned short t = (unsigned short)val_bat;
+//    QString stri;
+//    stri.setNum(t);
 
-    QTime times = QTime::currentTime();
-    QString str = times.toString(Qt::LocalDate);
+//    QTime times = QTime::currentTime();
+//    QString str = times.toString(Qt::LocalDate);
 
-    qDebug()<<per_cent;
-    qDebug()<<stri<<"-"<<str;
+//    qDebug()<<per_cent;
+//    qDebug()<<stri<<"-"<<str;
 /******************************************/
 
+    float val_bat_v;
+    val_bat_v = (float)val_bat/1000;
+    QString str_bat = QString::number(val_bat_v);
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
-
-//    QString st = QString (
-//                "QProgressBar::chunk {"
-//                "background-color: #ff0000;"
-//                 "}");
-
-//    st.append("QProgressBar {"
-//              "border: 1px solid grey;"
-//              "border-radius: 2px;"
-//              "text-align: center;"
-//              "background: #eeeeee;"
-//              "}");
-//    ui->progressBar->setStyleSheet(st);
+    ui->label_2->setText(tr("Уровень заряда батареи: %1 (В)").arg(str_bat));
 }
 
 //Изменения в форме при подключении порта----------------------------------------------------
@@ -510,6 +501,7 @@ void MainWindow::uiOffSlot()
     ui->comboBoxFlowControl->setEnabled(true);
     ui->comboBoxStopBits->setEnabled(true);
     ui->label->setText("МАС адрес гарнитуры: ");
+    ui->label_2->setText("Уровень заряда батареи");
 }
 
 //Показать доступнуе COM-порты------------------------------------------------------------
