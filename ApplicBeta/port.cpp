@@ -9,13 +9,13 @@ Port :: Port(QObject *parent) : QObject(parent)
 
 Port :: ~Port()
 {
-    qDebug("Всем спасибо и до свидания");//Виден в дебаге при отключении
+    //qDebug("Всем спасибо и до свидания");//Виден в дебаге при отключении
     emit finished_Port();
 }
 
 void Port :: process_Port()
 {
-    qDebug("Здаров");//виден в дебаге при подключении
+    //qDebug("Здаров");//виден в дебаге при подключении
 }
 
 //Запись насроек----------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ void Port::tx_get_status()
     DataTx[4] = (crc & 0xFF00)>>8;      //расчет crc отправляемой посылки (старший байт)
     DataTx[5] = crc & 0x00FF;           //расчет crc отправляемой посылки (дладший байт)
 
-    qDebug()<<DataTx.toHex().toUpper(); //Отображение в дебагере
+    //qDebug()<<DataTx.toHex().toUpper(); //Отображение в дебагере
     WriteToPort(DataTx);                //Запись в порт
 }
 
@@ -181,7 +181,7 @@ void Port::tx_get_fh_param()
     DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
     DataTx[8] = crc & 0x00FF;     //расчет crc отправляемой посылки (дладший байт)
 
-    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+    //qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
     WriteToPort(DataTx);               //Запись в порт
 }
 
@@ -203,7 +203,7 @@ void Port::tx_get_fh_key()
     DataTx[7] = (crc & 0xFF00)>>8;//расчет crc отправляемой посылки (старший байт)
     DataTx[8] = crc & 0x00FF;     //расчет crc отправляемой посылки (дладший байт)
 
-    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+    //qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
     WriteToPort(DataTx);               //Запись в порт
 }
 
@@ -247,7 +247,7 @@ uint8_t Port::ReadInPort()//Парсер
             if(data_rx[3] == STATUS_OK)//Ответ на запрос статуса
             {
                 error_(("STATUS_OK")); //вывод на консоль
-                qDebug()<<"STATUS_OK";
+                //qDebug()<<"STATUS_OK";
                 return STATUS_OK;
             }
             else if(data_rx[3] == SEND_FH_PARAM)//Ответ на запрос параметров
@@ -286,12 +286,12 @@ uint8_t Port::ReadInPort()//Парсер
                     str = str.remove(0, 1);       //удаляем нулевой символ ':'
                     error_(("Подключено новое устройство"));        //вывод на консоль
                     error_(("MAC адрес: " + str));//вывод на консоль
-                    qDebug()<<"GET_PARAM";
-                    qDebug()<<("MAC адрес: " + str);
+                    //qDebug()<<"GET_PARAM";
+                    //qDebug()<<("MAC адрес: " + str);
                     ParamsGet();
                     sendParam();
                 }
-                qDebug()<<data_rx.toHex().toUpper();
+                //qDebug()<<data_rx.toHex().toUpper();
                 return SEND_FH_PARAM;
             }
             else if(data_rx[3] == SEND_FH_KEY)//Ответ на запрос ключа шифрования
@@ -307,19 +307,19 @@ uint8_t Port::ReadInPort()//Парсер
             else if(data_rx[3] == REC_OK)//
             {
                 error_("Ключ загружен\r");
-                qDebug()<<"REC_OK";
+                //qDebug()<<"REC_OK";
                 return REC_OK;
             }
             else if(data_rx[3] == REC_ERROR)
             {
                 error_("REC_ERROR\r");
-                qDebug()<<"REC_ERROR";
+                //qDebug()<<"REC_ERROR";
                 return REC_ERROR;
             }
             else if(data_rx[3] == BAD_PACKET)
             {
                 error_("Ошибка CRC\r");
-                qDebug()<<"CRC_ERROR";
+                //qDebug()<<"CRC_ERROR";
                 return REC_ERROR;
             }
         }

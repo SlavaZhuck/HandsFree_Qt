@@ -1,8 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <error.h>
-#include <unistd.h>
-#include <QFontDatabase>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -127,7 +124,7 @@ void MainWindow::on_pushButton_clicked()
         {
             buf_DataTxK[i] = DataTxK[i];//формирование посылки
         }
-    qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
+    //qDebug()<<arr.toHex();//отображение в дебагере только ключа без формирования посылки
     ui->lineEdit->setText(QByteArray(arr.constData()).toHex().toUpper());//Отображение только ключа без формирования посылки
 }
 
@@ -151,7 +148,7 @@ void MainWindow::on_pushButton_3_clicked()
     Print("Прочитать ключ"); // Вывод данных в консоль
     writeData(DataTx);       //Запись в порт
     readyRead();
-    qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
+    //qDebug()<<DataTx.toHex().toUpper();//Отображение в дебагере
 }
 
 //Обновление параметров----------------------------------------------------------------------
@@ -309,7 +306,7 @@ void MainWindow::MacAdr()
     for(int i = 0; i < para_str.length(); i = i + 3)
         para_str = para_str.insert(i, ':'); //вставляем ":" в нужные маста
     para_str = para_str.remove(0, 1);       //удаляем нулевой символ
-    qDebug()<<param.toHex().toUpper();
+    //qDebug()<<param.toHex().toUpper();
 
     ui->label->setText("МАС адрес гарнитуры: " + para_str);
     GetBatter();
@@ -451,9 +448,9 @@ void MainWindow::GetBatter()
 
     float val_bat_v;
     val_bat_v = (float)val_bat/1000;
-    QString str_bat = QString::number(val_bat_v);
+//    QString str_bat = QString::number(val_bat_v);
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
-    ui->label_2->setText(tr("Уровень заряда батареи: %1 (В)").arg(str_bat));
+//    ui->label_2->setText(tr("Уровень заряда батареи: %1 (В)").arg(str_bat));
 }
 
 //Изменения в форме при подключении порта----------------------------------------------------
