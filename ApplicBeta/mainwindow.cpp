@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <error.h>
+#include <unistd.h>
+#include <QFontDatabase>
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -14,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_2->setEnabled(false);
     ui->pushButton_3->setEnabled(false);
     ui->pushButton_5->setStyleSheet(QString::fromUtf8("background-color: rgb(89, 89, 89);"));
+
 
     //Создаем таймер--------------------------------------------------------------------------
     ptimer = new QTimer();
@@ -317,7 +322,7 @@ void MainWindow::timerStartSlot()
 {
     if (!ptimer->isActive())//Еслитаймер неактивен
     {
-        ptimer->start(2000);//Запускаем таймер с интервалом 10 секунд
+        ptimer->start(5000);//Запускаем таймер с интервалом 10 секунд
     }
 }
 
@@ -368,9 +373,8 @@ void MainWindow::GetBatter()
 
     val_bat = ((bat_1 << 8) | bat_2) & 0xffff;//Загоняем масив в байты
 
-
-    //Моя формула***************************************
     val_bat *=2;
+
     if(val_bat > 3950)
     {
         per_cent_fl = 100;
@@ -379,9 +383,9 @@ void MainWindow::GetBatter()
     {
         per_cent_fl = (((val_bat - 3600)/3.5) * 0.95 + 5);
     }
-    else if(val_bat >= 3000)
+    else if(val_bat >= 3200)
     {
-        per_cent_fl = (((val_bat - 3000)/6) * 0.04 + 1);
+        per_cent_fl = (((val_bat - 3200)/4) * 0.04 + 1);
     }
     else
     {
@@ -389,68 +393,18 @@ void MainWindow::GetBatter()
     }
 
     per_cent = (int)(per_cent_fl);  //Округляем до целых
+/******************************************
+Для проверки заряда батареи
+    unsigned short t = (unsigned short)val_bat * 2;
+    QString stri;
+    stri.setNum(t);
 
+    QTime times = QTime::currentTime();
+    QString str = times.toString(Qt::LocalDate);
 
-//Вовина формула*********************************************
-//    if(val_bat > 0x06A4)
-//    {
-//        per_cent = ((val_bat/(0x07B7 - 0x064A)) * 0.95 + 5);
-//        ui->progressBar->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 255, 0);"));
-//    }
-//    else if(val_bat <= 0x06A4 && val_bat > 0x05AA)
-//    {
-//        per_cent = ((val_bat/(0x06A4 - 0x05AA)) * 0.04 + 1);
-//        ui->progressBar->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 255, 0);"));
-//    }
-//    else if(val_bat <= 0x05AA && val_bat > 0x0578)
-//    {
-//        per_cent = 1;
-//        ui->progressBar->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 0, 0);"));
-//    }
-//    else if(val_bat < 0x0578)
-//    {
-//        per_cent = 0;
-//    }
-
-//Формула Славы******************************************************
-//    val_bat *=2;
-//    double per_cent_fl;//Проценты (без округления до целых)
-//    per_cent_fl =(((val_bat*2 - 3600))/(3.5));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
-//    if(per_cent_fl <= 0)
-//        per_cent = 0;
-//    else if(per_cent_fl >= 100)
-//        per_cent = 100;
-//    else
-//        per_cent = (int)(per_cent_fl);  //Округляем до целых
-
-//Старая формула расчета заряда батареи******************************
-//    double per_cent_fl;//Проценты (без округления до целых)
-//    per_cent_fl = ((100*(val_bat - MIN_VAl_BAT))/(MAX_VAL_BAT - MIN_VAl_BAT));//Получаем уровень заряда в процентах (per_cent_fl = ((100*(val_volt - 2.7))/(4.25 - 2.7)))
-//    if(per_cent_fl <= 0)
-//        per_cent = 0;
-//    else if(per_cent_fl >= 100)
-//        per_cent = 100;
-//    else
-//        per_cent = (int)(per_cent_fl + 0.5);  //Округляем до целых
-
-/******************************************/
-//Для проверки заряда батареи
-//    unsigned short t = (unsigned short)val_bat;
-//    QString stri;
-//    stri.setNum(t);
-
-//    QTime times = QTime::currentTime();
-//    QString str = times.toString(Qt::LocalDate);
-
-//    qDebug()<<per_cent;
-//    qDebug()<<stri<<"-"<<str;
-/******************************************/
-
-    float val_bat_v;
-    val_bat_v = (float)val_bat/1000;
-//    QString str_bat = QString::number(val_bat_v);
+    qDebug()<<stri<<"-"<<str;
+******************************************/
     ui->progressBar->setValue(per_cent);      //Подставляем в ProgressBar
-//    ui->label_2->setText(tr("Уровень заряда батареи: %1 (В)").arg(str_bat));
 }
 
 //Изменения в форме при подключении порта----------------------------------------------------
@@ -498,7 +452,6 @@ void MainWindow::uiOffSlot()
     ui->comboBoxFlowControl->setEnabled(true);
     ui->comboBoxStopBits->setEnabled(true);
     ui->label->setText("МАС адрес гарнитуры: ");
-    ui->label_2->setText("Уровень заряда батареи");
 }
 
 //Показать доступнуе COM-порты------------------------------------------------------------

@@ -41,5 +41,5 @@ RC_FILE =  AppBet.rc
 RC_ICONS = AppBet.ico
 
 RESOURCES += \
-    res.qrc
+    fonts.qrc
 
