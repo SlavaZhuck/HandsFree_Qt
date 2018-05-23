@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/fonts">
+        <file>LiberationSerif-Regular.ttf</file>
+    </qresource>
+</RCC>
