@@ -159,7 +159,7 @@ void Port::tx_get_status()
     DataTx[4] = (crc & 0xFF00)>>8;      //расчет crc отправляемой посылки (старший байт)
     DataTx[5] = crc & 0x00FF;           //расчет crc отправляемой посылки (дладший байт)
 
-    //qDebug()<<DataTx.toHex().toUpper(); //Отображение в дебагере
+    qDebug()<<"tx_get_status"<<DataTx.toHex().toUpper(); //Отображение в дебагере
     WriteToPort(DataTx);                //Запись в порт
 }
 
