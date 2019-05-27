@@ -34,11 +34,13 @@ MainWindow::MainWindow(QWidget *parent) :
     chekComName();
 
     connect(ui->comboBoxBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
+    ui->comboBoxBaudRate->addItem(QLatin1String("921600"), 921600);
+    ui->comboBoxBaudRate->addItem(QLatin1String("460800"), 460800);
+    ui->comboBoxBaudRate->addItem(QLatin1String("230400"), 230400);
     ui->comboBoxBaudRate->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->comboBoxBaudRate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400);
     ui->comboBoxBaudRate->addItem(QLatin1String("19200"),  QSerialPort::Baud19200);
     ui->comboBoxBaudRate->addItem(QLatin1String("9600"),   QSerialPort::Baud9600);
-    ui->comboBoxBaudRate->addItem(QLatin1String("Custom"));
     // Длина потока
     ui->comboBoxDataBits->addItem(QLatin1String("5"), QSerialPort::Data5);
     ui->comboBoxDataBits->addItem(QLatin1String("6"), QSerialPort::Data6);
@@ -253,7 +255,9 @@ void MainWindow::checkCustomBaudRatePolicy(int idx)
     ui->comboBoxBaudRate->setEditable(isCustomBaudRate);
     if(isCustomBaudRate)
     {
+        ui->comboBoxBaudRate->setEditable(isCustomBaudRate);
         ui->comboBoxBaudRate->clearEditText();
+        ui->comboBoxBaudRate->setStyleSheet("QComboBox { background-color: rgb(49, 47, 49); }");
     }
 }
 
