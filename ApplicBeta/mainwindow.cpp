@@ -252,7 +252,6 @@ void MainWindow::on_lineEdit_returnPressed()
 void MainWindow::checkCustomBaudRatePolicy(int idx)
 {
     bool isCustomBaudRate = !ui->comboBoxBaudRate->itemData(idx).isValid();
-    ui->comboBoxBaudRate->setEditable(isCustomBaudRate);
     if(isCustomBaudRate)
     {
         ui->comboBoxBaudRate->setEditable(isCustomBaudRate);
